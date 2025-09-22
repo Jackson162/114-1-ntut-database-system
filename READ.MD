@@ -1,0 +1,1 @@
+如果需要改動文件內容就先改 `specification/phase1/specification.md`，再把內容改到 word，再一起 commit 上來
