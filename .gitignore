@@ -46,3 +46,4 @@ config.json # You might have a config file with secrets
 credentials.txt # A file for credentials
 
 .DS_Store
+.env

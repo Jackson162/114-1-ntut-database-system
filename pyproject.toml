@@ -1,0 +1,35 @@
+[tool.pyright]
+include = ["app"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv"
+]
+defineConstant = { DEBUG = true }
+venv = "env3813"
+
+reportGeneralTypeIssues = "none"
+reportImplicitStringConcatenation = "none"
+reportPrivateImportUsage = "none"
+reportUnsupportedDunderAll = "none"
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+line_length = 100
+profile = "black"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+select = ["I"]
