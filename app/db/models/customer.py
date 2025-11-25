@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Text, CHAR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
+from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.order import Order

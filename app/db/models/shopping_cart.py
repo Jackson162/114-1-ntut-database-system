@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
+from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.cart_item import CartItem

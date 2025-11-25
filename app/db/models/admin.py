@@ -4,7 +4,7 @@ Class definition for Admin
 
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import Text
-from app.db.database import Base
+from app.db.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:

@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import Integer, Text, text, CHAR, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
+from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.staff import Staff

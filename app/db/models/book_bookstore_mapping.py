@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, Integer, text, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.database import Base
+from app.db.models.base import Base
 
 
 class BookBookstoreMapping(Base):
