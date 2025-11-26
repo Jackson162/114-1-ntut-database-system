@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+
+</head>
+<body>
+
+    <h1>Bookstore Login</h1>
+
+    {% if login_error %}
+        <div class="error" style="color: red;">
+            <h2>Login Error</h2>
+            <p>{{ login_error }}</p>
+        </div>
+    {% endif %}
+
+    {% if register_succeeded %}
+        <div class="success" style="color: green;">
+            <h2>Registration Successful</h2>
+            <p>You can now log in with your new account.</p>
+        </div>
+    {% endif %}
+
+    <form id="login_form" method="post" action="/auth/login">
+        <label for="account">Account:</label><br>
+        <input type="text" id="account" name="account" required><br><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        <label for="role">Role:</label><br>
+        <select id="role" name="role">
+            <option value="customer">Customer</option>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+        </select><br><br>
+        <input type="submit" value="Login">
+
+    </form>
+    <div id="login_error" hidden>
+      <h1>login error!!!!!</h1>
+    </div>
+      <script>
+    const form = document.getElementById('login_form');
+    // Attaches the main submission handler
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault(); // Stop the default page reload
+        console.log("submit captured")
+        // 1. Get the data
+        const formData = new FormData(event.target);
+        const formProps = Object.fromEntries(formData);
+        const jsonPayload = JSON.stringify(formProps);
+        console.log("jsonPayload")
+        console.log(jsonPayload)
+        // 2. Send the data
+        await sendDataWithFetch(jsonPayload);
+    });
+
+    // Function to send the data via Fetch API
+    async function sendDataWithFetch(payload) {
+        const url = '/auth/login';
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: payload,
+            });
+
+            if (response.ok) {
+              data = await response.json()
+              localStorage.setItem("ntut_db_jwt", data.auth_token);
+              window.location.href = data.next_page_path;
+            } else {
+                console.error(`login failed with status: ${response.status}`);
+                console.log(response)
+                showLoginError()
+            }
+        } catch (error) {
+            console.error(`login failed with error: ${error}`);
+            console.log('An error occurred during submission.');
+            showLoginError()
+        }
+    }
+
+    function showLoginError() {
+        const div = document.getElementById('login_error');
+        if (div.hasAttribute('hidden')) div.removeAttribute('hidden');
+    }
+  </script>
+</body>
+</html>

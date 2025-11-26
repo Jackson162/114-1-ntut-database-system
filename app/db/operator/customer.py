@@ -2,6 +2,13 @@ from typing import Optional
 from app.db.models.customer import Customer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
+
+
+async def get_customer_by_account(db: AsyncSession, account: str):
+    query = select(Customer).where(Customer.account == account)
+    result = await db.execute(query)
+    return result.scalars().one()
 
 
 async def create_customer(

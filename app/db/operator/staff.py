@@ -1,8 +1,15 @@
 from typing import Optional, Dict, Any
+from uuid import UUID
 from app.db.models.staff import Staff
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from uuid import UUID
+from sqlalchemy import select
+
+
+async def get_staff_by_account(db: AsyncSession, account: str):
+    query = select(Staff).where(Staff.account == account)
+    result = await db.execute(query)
+    return result.scalars().one()
 
 
 async def create_staff(

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # jwt
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
+    JWT_ISSUER: str = "http://localhost:8000"
 
     # database
     # enable this if you want to build a new db in your local
