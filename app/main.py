@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.core.config import settings
 from app.db.init_db import init_db
-from app.router import auth
+from app.router import auth, frontend
 
 
 @asynccontextmanager
@@ -18,4 +18,5 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(frontend.router, prefix="/frontend")
 app.include_router(auth.router, prefix="/auth")

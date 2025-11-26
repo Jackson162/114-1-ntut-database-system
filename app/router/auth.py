@@ -1,9 +1,10 @@
 from typing import Optional, Annotated
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Form, status, Request
+from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.middleware.db_session import get_db_session
-from enum.user import UserRole
+from app.enum.user import UserRole
 from app.db.operator.customer import create_customer
 from app.db.operator.staff import create_staff
 
@@ -13,17 +14,18 @@ from app.router.template.index import templates
 router = APIRouter()
 
 
-@router.post("/register")
+@router.post("/register", response_class=HTMLResponse)
 async def register(
+    request: Request,
     role: Annotated[str, Form()],
     name: Annotated[str, Form()],
     password: Annotated[str, Form()],
     account: Annotated[str, Form()],
-    phone_number: Annotated[Optional[str], Form()],
-    email: Annotated[Optional[str], Form()],
-    address: Annotated[Optional[str], Form()],
+    phone_number: Annotated[Optional[str], Form()] = None,
+    email: Annotated[Optional[str], Form()] = None,
+    address: Annotated[Optional[str], Form()] = None,
     db: AsyncSession = Depends(get_db_session),
-):
+) -> HTMLResponse:
     try:
         hashed_password = hash_password(password)
         if role == UserRole.CUSTOMER.value and phone_number:
@@ -40,6 +42,7 @@ async def register(
             await create_staff(name=name, password=hashed_password, account=account, db=db)
     except Exception as err:
         context = {
+            "request": request,
             "register_error": repr(err),
         }
         return templates.TemplateResponse(
@@ -47,6 +50,7 @@ async def register(
         )
 
     context = {
+        "request": request,
         "register_succeeded": True,
     }
     return templates.TemplateResponse("login.jinja", context, status_code=status.HTTP_200_OK)
