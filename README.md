@@ -1,5 +1,6 @@
 # Local Development
 Use python 3.12.9
+
 1.
 ```
 python3 -m venv .venv
@@ -24,6 +25,12 @@ run db server
 ```
 docker-compose -f docker-compose.db.yaml up 
 ```
+
+6.
+set up your .env and if it is your first time running the server or there is new files in `migrations`, set `DO_INIT_DB`=true otherwise false. `DO_INIT_DB`=true will allow `alembic upgrad` during server startup.
+
+7.
+go to vscode debugger and press green arrow to run server
 
 
 # DB Migrations
