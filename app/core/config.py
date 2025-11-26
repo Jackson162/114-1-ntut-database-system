@@ -8,6 +8,10 @@ class Settings(BaseSettings):
 
     LOG_LEVEL = "DEBUG"
 
+    # jwt
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+
     # database
     # enable this if you want to build a new db in your local
     DO_INIT_DB: bool = False
