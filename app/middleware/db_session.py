@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import Request
-from seasalt_common_lib.logging.logger import get_logger
+from app.logging.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.db import session_factory
@@ -26,7 +26,8 @@ async def get_db_session(
         got_db_time = time.time()
         logger.debug(
             (
-                f"The request {request_name} opened a db session: {id(session)}, time elapsed: {got_db_time-start_time:.3f}s"
+                f"The request {request_name} opened a db session: {id(session)},"
+                f" time elapsed: {got_db_time-start_time:.3f}s"
             )
         )
         try:

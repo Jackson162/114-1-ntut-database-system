@@ -6,6 +6,8 @@ from pydantic import BaseSettings, PostgresDsn, validator
 class Settings(BaseSettings):
     """Extract env variables to app settings."""
 
+    LOG_LEVEL = "DEBUG"
+
     # database
     # enable this if you want to build a new db in your local
     DO_INIT_DB: bool = False

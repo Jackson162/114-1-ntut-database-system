@@ -45,5 +45,13 @@ Icon? # macOS icon files
 config.json # You might have a config file with secrets
 credentials.txt # A file for credentials
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
 .DS_Store
 .env
+.venv
+postgres-data

@@ -40,6 +40,7 @@ class Coupon(Base):
 
     __table_args__ = (
         CheckConstraint(
-            discount_percentage >= 0 and discount_percentage <= 1, name="discount_percentage_check"
+            (discount_percentage >= 0) & (discount_percentage <= 1),
+            name="discount_percentage_check",
         ),
     )
