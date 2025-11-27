@@ -1,0 +1,1 @@
+drop table if exists coupon ,order_ ,order_item ,customer,shopping_cart,cart_item,admin,staff,bookstore,book,book_bookstore_mapping;
