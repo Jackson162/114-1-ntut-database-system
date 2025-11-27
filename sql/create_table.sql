@@ -18,7 +18,7 @@ create table if not exists staff(
 	account text primary key,
 	name text not null,
 	password text not null,
-	bookstore_id uuid not null,
+	bookstore_id uuid,
 	constraint fk_bookstore_id
 		foreign key (bookstore_id)
 		references bookstore(bookstore_id)
