@@ -49,3 +49,48 @@ def encode_jwt(payload: JwtPayload) -> str:
         payload.dict(), settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
     )
     return encoded_jwt
+
+
+def decode_jwt(
+    token: str,
+) -> JwtPayload:
+    """
+    options: Decoding options. If omitted, the default options is:
+
+        {
+            "verify_signature": True,
+            "verify_exp": True,
+            "verify_nbf": True,
+            "verify_iat": True,
+            "verify_aud": True,
+            "verify_iss": True,
+            "require": [],
+        }
+
+    """
+    try:
+        payload = jwt.decode(
+            token,
+            key=settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+            issuer=settings.JWT_ISSUER,
+            options={
+                "verify_signature": True,
+                "verify_exp": True,
+                "verify_iat": True,
+                "verify_iss": True,
+            },
+        )
+
+        return JwtPayload(**payload)
+    except jwt.DecodeError as err:
+        logger.error(f"Failed to decode JWT token:{token}, error:{err}")
+        raise err
+    except (
+        jwt.ExpiredSignatureError,
+        jwt.ImmatureSignatureError,
+        jwt.InvalidSignatureError,
+        jwt.InvalidTokenError,
+    ) as err:
+        logger.error(f"Invalid JWT token:{token}, error:{err}")
+        raise err
