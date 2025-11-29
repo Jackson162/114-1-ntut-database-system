@@ -34,7 +34,7 @@ class Bookstore(Base):
     # Relationships
     staffs: Mapped[List["Staff"]] = relationship(back_populates="bookstore")
     book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
-        back_populates="book_store"
+        back_populates="bookstore"
     )
 
     __table_args__ = (CheckConstraint(shipping_fee >= 0, name="shipping_fee_non_negative"),)
