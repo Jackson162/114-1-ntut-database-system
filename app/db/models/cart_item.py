@@ -12,6 +12,7 @@ from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.shopping_cart import ShoppingCart
+    from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
 class CartItem(Base):
@@ -31,5 +32,8 @@ class CartItem(Base):
         ForeignKey("book_bookstore_mapping.book_bookstore_mapping_id")
     )
 
-    cart: Mapped["ShoppingCart"] = relationship(back_populates="items")
+    cart: Mapped["ShoppingCart"] = relationship(back_populates="cart_items")
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
+        back_populates="cart_items"
+    )
     __table_args__ = (CheckConstraint(quantity >= 0, name="quantity_non_negative"),)

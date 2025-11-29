@@ -12,6 +12,7 @@ from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.order import Order
+    from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
 class OrderItem(Base):
@@ -32,7 +33,10 @@ class OrderItem(Base):
         ForeignKey("book_bookstore_mapping.book_bookstore_mapping_id")
     )
 
-    order: Mapped["Order"] = relationship(back_populates="items")
+    order: Mapped["Order"] = relationship(back_populates="order_items")
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
+        back_populates="order_items"
+    )
 
     __table_args__ = (
         CheckConstraint(quantity >= 0, name="quantity_non_negative"),

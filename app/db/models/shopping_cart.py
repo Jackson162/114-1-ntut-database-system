@@ -26,4 +26,4 @@ class ShoppingCart(Base):
     )
     customer_account: Mapped[str] = mapped_column(ForeignKey("customer.account"))
 
-    items: Mapped[List["CartItem"]] = relationship(back_populates="cart")
+    cart_items: Mapped[List["CartItem"]] = relationship(back_populates="cart")

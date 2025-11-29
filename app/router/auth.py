@@ -1,5 +1,5 @@
 from typing import Optional, Annotated
-from fastapi import APIRouter, Depends, Form, status, Request
+from fastapi import APIRouter, Depends, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
@@ -17,7 +17,6 @@ router = APIRouter()
 
 @router.post("/register", response_class=RedirectResponse)
 async def register(
-    request: Request,
     role: Annotated[str, Form()],
     name: Annotated[str, Form()],
     password: Annotated[str, Form()],
@@ -45,16 +44,15 @@ async def register(
         await db.commit()
     except Exception as err:
         await db.rollback()
-        redirect_url = f"/frontend/register?register_error={repr(err)}"
+        redirect_url = f"/frontend/auth/register?register_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
-    redirect_url = "/frontend/login?register_succeeded=true"
+    redirect_url = "/frontend/auth/login?register_succeeded=true"
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/login", response_class=HTMLResponse)
 async def login(
-    request: Request,
     login_data: LoginData,
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -65,13 +63,13 @@ async def login(
         try:
             if role == UserRole.CUSTOMER.value:
                 user = await get_customer_by_account(db=db, account=account)
-                next_page_path = "/frontend/user_login_succeeded"
+                next_page_path = "/frontend/auth/user_login_succeeded"
             elif role == UserRole.STAFF.value:
                 user = await get_staff_by_account(db=db, account=account)
-                next_page_path = "/frontend/staff_login_succeeded"
+                next_page_path = "/frontend/auth/staff_login_succeeded"
             elif role == UserRole.ADMIN.value:
                 user = await get_admin_by_account(db=db, account=account)
-                next_page_path = "/frontend/admin_login_succeeded"
+                next_page_path = "/frontend/auth/admin_login_succeeded"
             else:
                 raise Exception(f"Invalid role: {role}")
         except NoResultFound:

@@ -2,7 +2,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.core.config import settings
 from app.db.init_db import init_db
-from app.router import auth, frontend
+from app.router import auth
+from app.router.frontend import frontend
 
 
 @asynccontextmanager

@@ -12,6 +12,7 @@ from app.db.models.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.staff import Staff
+    from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
 class Bookstore(Base):
@@ -32,5 +33,8 @@ class Bookstore(Base):
 
     # Relationships
     staffs: Mapped[List["Staff"]] = relationship(back_populates="bookstore")
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
+        back_populates="book_store"
+    )
 
     __table_args__ = (CheckConstraint(shipping_fee >= 0, name="shipping_fee_non_negative"),)

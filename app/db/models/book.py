@@ -7,9 +7,10 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import Date, Text, text, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
+from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
 class Book(Base):
@@ -29,3 +30,5 @@ class Book(Base):
     category: Mapped[Optional[str]] = mapped_column(Text)
     series: Mapped[Optional[str]] = mapped_column(Text)
     publish_date: Mapped[Optional[date]] = mapped_column(Date)
+
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(back_populates="book")
