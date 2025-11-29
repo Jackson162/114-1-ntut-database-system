@@ -2,16 +2,19 @@
 Class definition for BookBookstoreMapping
 """
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, Integer, text, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
-from app.db.models.book import Book
-from app.db.models.bookstore import Bookstore
-from app.db.models.order_item import OrderItem
-from app.db.models.cart_item import CartItem
+
+if TYPE_CHECKING:
+    from app.db.models.book import Book
+    from app.db.models.bookstore import Bookstore
+    from app.db.models.order_item import OrderItem
+    from app.db.models.cart_item import CartItem
 
 
 class BookBookstoreMapping(Base):
