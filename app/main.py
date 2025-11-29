@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
+from starlette import status
 from app.core.config import settings
 from app.db.init_db import init_db
 from app.router import auth
@@ -21,3 +23,14 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(frontend.router, prefix="/frontend")
 app.include_router(auth.router, prefix="/auth")
+
+
+@app.exception_handler(Exception)
+async def custom_exception_handler(request: Request, exc: Exception):
+    # Log the error for debugging purposes (optional but recommended)
+    print(f"Unhandled server error occurred: {exc}")
+
+    # Use PlainTextResponse to safely return a string
+    return PlainTextResponse(
+        "Unhandled Server Exception", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

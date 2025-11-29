@@ -45,7 +45,7 @@ If you change the model files in `app/database/models`,
 ./.venv/bin/python -m alembic revision --autogenerate -m "${revision_message}"
 ```
 
-1. check the generated file in `migrations/versions`
+5. check the generated file in `migrations/versions`
    
 ## do db migration
 1. set the env variable: `DO_INIT_DB` to true, and run the server.
