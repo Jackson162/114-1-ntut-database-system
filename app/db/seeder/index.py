@@ -32,15 +32,24 @@ STAFF_ACCOUNT = "staff_B"
 # 為方便測試，設定一個通用明文密碼
 DEFAULT_PASSWORD = "123"
 
+# -----------------------------------------------------------
+# 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
+# -----------------------------------------------------------
+def generate_deterministic_uuid(name: str) -> uuid.UUID:
+    """Generates a reproducible UUID based on a namespace and a fixed name."""
+    # 使用 uuid.NAMESPACE_DNS 作為命名空間，確保結果固定
+    return uuid.uuid5(uuid.NAMESPACE_DNS, name)
+
 # 固定的 UUID 以便測試和重現
-BOOKSTORE_UUID = uuid.UUID("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-BOOK_UUID_1 = uuid.UUID("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-BOOK_UUID_2 = uuid.UUID("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-BBM_UUID_1 = uuid.UUID("d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-BBM_UUID_2 = uuid.UUID("e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-COUPON_UUID = uuid.UUID("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-CART_UUID = uuid.UUID("01eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-ORDER_UUID = uuid.UUID("11eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+# 使用 generate_deterministic_uuid 函式根據名稱生成，確保 UUID 穩定不變
+BOOKSTORE_UUID = generate_deterministic_uuid("Bookworm Bookstore")
+BOOK_UUID_1 = generate_deterministic_uuid("Python Database Application Book")
+BOOK_UUID_2 = generate_deterministic_uuid("Mastering SQLAlchemy Book")
+BBM_UUID_1 = generate_deterministic_uuid("BBM_Python_Bookworm")
+BBM_UUID_2 = generate_deterministic_uuid("BBM_SQLA_Bookworm")
+COUPON_UUID = generate_deterministic_uuid("New Customer Discount")
+CART_UUID = generate_deterministic_uuid(CUSTOMER_ACCOUNT + "_cart")
+ORDER_UUID = generate_deterministic_uuid(CUSTOMER_ACCOUNT + "_order")
 
 
 async def seed_data():
