@@ -1,0 +1,246 @@
+import asyncio
+import uuid
+from datetime import date, timedelta
+from decimal import Decimal
+
+# 從專案中導入設定和資料庫連線
+from app.core.config import settings
+from app.db.db import session_factory, engine
+
+# 導入密碼雜湊工具
+from app.util.auth import hash_password 
+
+# 導入所有 ORM 模型
+from app.db.models.admin import Admin
+from app.db.models.customer import Customer
+from app.db.models.staff import Staff
+from app.db.models.bookstore import Bookstore
+from app.db.models.book import Book
+from app.db.models.book_bookstore_mapping import BookBookstoreMapping
+from app.db.models.coupon import Coupon
+from app.db.models.shopping_cart import ShoppingCart
+from app.db.models.cart_item import CartItem
+from app.db.models.order import Order
+from app.db.models.order_item import OrderItem
+
+# -----------------------------------------------------------
+# 定義範例資料的 ID (用於連結外鍵)
+# -----------------------------------------------------------
+ADMIN_ACCOUNT = "admin_001"
+CUSTOMER_ACCOUNT = "customer_A"
+STAFF_ACCOUNT = "staff_B"
+# 為方便測試，設定一個通用明文密碼
+DEFAULT_PASSWORD = "123"
+
+# 固定的 UUID 以便測試和重現
+BOOKSTORE_UUID = uuid.UUID("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+BOOK_UUID_1 = uuid.UUID("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+BOOK_UUID_2 = uuid.UUID("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+BBM_UUID_1 = uuid.UUID("d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+BBM_UUID_2 = uuid.UUID("e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+COUPON_UUID = uuid.UUID("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+CART_UUID = uuid.UUID("01eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+ORDER_UUID = uuid.UUID("11eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+
+
+async def seed_data():
+    """
+    資料填充函式，用於 populate 數據庫表格。
+    """
+    # 預先雜湊密碼
+    hashed_password = hash_password(DEFAULT_PASSWORD)
+    
+    # 1. 獲取一個新的非同步會話
+    async with session_factory() as db:
+        print("--- 開始資料填充程序 ---")
+
+        # 2. 基礎資料: Admin, Customer, Bookstore, Staff, Book
+
+        # Admin (db/models/admin.py)
+        admin_user = Admin(
+            account=ADMIN_ACCOUNT,
+            name="系統管理員",
+            password=hashed_password, 
+        )
+
+        # Customer (db/models/customer.py)
+        customer = Customer(
+            account=CUSTOMER_ACCOUNT,
+            name="王小明",
+            password=hashed_password,
+            phone_number="0912345678",
+            email="ming@example.com",
+            address="台北市信義區忠孝東路一段1號",
+        )
+
+        # Bookstore (db/models/bookstore.py)
+        bookstore = Bookstore(
+            bookstore_id=BOOKSTORE_UUID,
+            name="Bookworm 書店",
+            phone_number="0212345678",
+            email="bookworm@store.com",
+            address="新北市板橋區文化路二段1號",
+            shipping_fee=60,  # 運費
+        )
+
+        # Staff (db/models/staff.py) - 依賴 Bookstore
+        staff_user = Staff(
+            account=STAFF_ACCOUNT,
+            name="陳店員",
+            password=hashed_password,
+            bookstore_id=BOOKSTORE_UUID,
+        )
+
+        # Book 1 (db/models/book.py)
+        book_1 = Book(
+            book_id=BOOK_UUID_1,
+            title="Python 資料庫應用",
+            author="李大偉",
+            publisher="技術出版社",
+            isbn="978-986-7798-00-1",
+            category="程式設計",
+            publish_date=date(2023, 10, 15),
+        )
+
+        # Book 2 (db/models/book.py)
+        book_2 = Book(
+            book_id=BOOK_UUID_2,
+            title="精通SQLAlchemy",
+            author="林小美",
+            publisher="程式設計出版社",
+            isbn="978-986-7798-00-2",
+            category="程式設計",
+            publish_date=date(2024, 1, 20),
+        )
+
+        db.add_all([admin_user, customer, bookstore, staff_user, book_1, book_2])
+        await db.flush()  # 確保基礎資料的 ID 在本會話中可用
+
+        # 3. 中繼資料: BookBookstoreMapping, Coupon
+
+        # BookBookstoreMapping 1 (db/models/book_bookstore_mapping.py) - 依賴 Book, Bookstore
+        bbm_1 = BookBookstoreMapping(
+            book_bookstore_mapping_id=BBM_UUID_1,
+            price=550,
+            store_quantity=100,
+            book_id=BOOK_UUID_1,
+            bookstore_id=BOOKSTORE_UUID,
+        )
+
+        # BookBookstoreMapping 2
+        bbm_2 = BookBookstoreMapping(
+            book_bookstore_mapping_id=BBM_UUID_2,
+            price=480,
+            store_quantity=50,
+            book_id=BOOK_UUID_2,
+            bookstore_id=BOOKSTORE_UUID,
+        )
+
+        # Coupon (db/models/coupon.py) - 依賴 Admin
+        coupon = Coupon(
+            coupon_id=COUPON_UUID,
+            type="新客折扣",
+            discount_percentage=Decimal("0.10"),  # 10% 折扣
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=30),
+            admin_account=ADMIN_ACCOUNT,
+        )
+
+        db.add_all([bbm_1, bbm_2, coupon])
+        await db.flush()
+
+        # 4. 購物車資料: ShoppingCart, CartItem
+
+        # ShoppingCart (db/models/shopping_cart.py) - 依賴 Customer
+        shopping_cart = ShoppingCart(
+            cart_id=CART_UUID,
+            customer_account=CUSTOMER_ACCOUNT,
+        )
+
+        db.add(shopping_cart)
+        await db.flush()
+
+        # CartItem 1 (db/models/cart_item.py) - 依賴 ShoppingCart, BookBookstoreMapping
+        cart_item_1 = CartItem(
+            quantity=1,
+            cart_id=CART_UUID,
+            book_bookstore_mapping_id=BBM_UUID_1,
+        )
+
+        # CartItem 2
+        cart_item_2 = CartItem(
+            quantity=2,
+            cart_id=CART_UUID,
+            book_bookstore_mapping_id=BBM_UUID_2,
+        )
+
+        db.add_all([cart_item_1, cart_item_2])
+        await db.flush()
+
+        # 5. 訂單資料: Order, OrderItem
+
+        # 計算訂單總價 (含 10% 折扣和運費)
+        # 總書價: (550 * 1) + (480 * 2) = 550 + 960 = 1510
+        # 折扣後: 1510 * (1 - 0.10) = 1359
+        # 最終價格: 1359 + 60 (運費) = 1419
+        total_price = int(
+            (bbm_1.price * cart_item_1.quantity + bbm_2.price * cart_item_2.quantity)
+            * (1 - coupon.discount_percentage)
+            + bookstore.shipping_fee
+        )
+
+        # Order (db/models/order.py) - 依賴 Customer, Coupon
+        order = Order(
+            order_id=ORDER_UUID,
+            order_time=date.today(),
+            customer_name=customer.name,
+            customer_phone_number=customer.phone_number,
+            customer_email=customer.email,
+            status="待出貨",
+            total_price=total_price,
+            shipping_address=customer.address,
+            shipping_fee=bookstore.shipping_fee,
+            recipient_name="王小明",
+            coupon_id=COUPON_UUID,
+            customer_account=CUSTOMER_ACCOUNT,
+        )
+
+        db.add(order)
+        await db.flush()
+
+        # OrderItem 1 (db/models/order_item.py) - 依賴 Order, BookBookstoreMapping
+        order_item_1 = OrderItem(
+            quantity=cart_item_1.quantity,
+            price=bbm_1.price,
+            order_id=ORDER_UUID,
+            book_bookstore_mapping_id=BBM_UUID_1,
+        )
+
+        # OrderItem 2
+        order_item_2 = OrderItem(
+            quantity=cart_item_2.quantity,
+            price=bbm_2.price,
+            order_id=ORDER_UUID,
+            book_bookstore_mapping_id=BBM_UUID_2,
+        )
+
+        db.add_all([order_item_1, order_item_2])
+
+        # 6. 提交事務
+        await db.commit()
+        print("--- 資料填充成功完成 ---")
+        print(f"成功創建的管理員帳號: {ADMIN_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
+        print(f"成功創建的客戶帳號: {CUSTOMER_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
+        print(f"成功創建的員工帳號: {STAFF_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
+
+
+if __name__ == "__main__":
+    try:
+        # Pydantic Settings 在這裡會載入 .env 檔案
+        print(f"使用的資料庫 URI: {settings.DATABASE_URI}")
+        print("請確保您的資料庫已啟動且表格已初始化（例如：運行 Alembic 遷移）後再執行此腳本。")
+        asyncio.run(seed_data())
+    except Exception as e:
+        print(f"資料填充過程中發生錯誤: {e}")
+        # 錯誤時釋放連線池
+        asyncio.run(engine.dispose())
