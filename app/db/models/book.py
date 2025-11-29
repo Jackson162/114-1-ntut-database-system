@@ -3,14 +3,16 @@ Class definition for Book
 """
 
 from datetime import date
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import Date, Text, text, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
-from app.db.models.book_bookstore_mapping import BookBookstoreMapping
+
+if TYPE_CHECKING:
+    from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
 class Book(Base):
