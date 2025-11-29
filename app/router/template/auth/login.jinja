@@ -70,7 +70,6 @@
 
             if (response.ok) {
               data = await response.json()
-              localStorage.setItem("ntut_db_jwt", data.auth_token);
               window.location.href = data.next_page_path;
             } else {
                 console.error(`login failed with status: ${response.status}`);

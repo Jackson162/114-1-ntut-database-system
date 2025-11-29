@@ -1,7 +1,6 @@
 from typing import Tuple
 
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.util.auth import JwtPayload, decode_jwt
@@ -14,15 +13,14 @@ from app.db.operator.admin import get_admin_by_account
 from app.db.operator.customer import get_customer_by_account
 from app.db.operator.staff import get_staff_by_account
 
-oauth2_schema = OAuth2PasswordBearer("auth/login")
-
 
 def validate_token_by_role(authorized_role: str):
     async def aux(
-        token: str = Depends(oauth2_schema),
+        request: Request,
         db: AsyncSession = Depends(get_db_session),
     ) -> Tuple[JwtPayload, Customer] | Tuple[JwtPayload, Staff] | Tuple[JwtPayload, Admin]:
         try:
+            token = request.cookies.get("auth_token") or ""
             jwt_payload = decode_jwt(token)
 
             if jwt_payload.role != authorized_role:

@@ -78,11 +78,24 @@ async def login(
         hashed_password = user.password
 
         if validate_password(password=password, hashed_password=hashed_password):
-            auth_token = generate_jwt(account=account, role=role)
-            return JSONResponse(
+            expires_in_seconds: int = 86400 * 30
+            auth_token = generate_jwt(
+                account=account, role=role, expires_in_seconds=expires_in_seconds
+            )
+            response = JSONResponse(
                 content={"next_page_path": next_page_path, "auth_token": auth_token},
                 status_code=200,
             )
+            response.set_cookie(
+                key="auth_token",
+                value=auth_token,
+                max_age=expires_in_seconds,
+                httponly=True,
+                secure=True,
+                samesite="lax",
+                path="/",
+            )
+            return response
         else:
             raise Exception("This password is wrong")
 
