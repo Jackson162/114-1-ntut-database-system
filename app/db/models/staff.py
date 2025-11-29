@@ -25,7 +25,7 @@ class Staff(Base):
     account: Mapped[str] = mapped_column(Text, primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     password: Mapped[str] = mapped_column(Text, nullable=False)
-    bookstore_id: Mapped[UUID] = mapped_column(ForeignKey("bookstore.bookstore_id"), nullable=False)
+    bookstore_id: Mapped[UUID] = mapped_column(ForeignKey("bookstore.bookstore_id"), nullable=True)
 
     bookstore: Mapped["Bookstore"] = relationship(back_populates="staffs")
     coupons: Mapped[Optional[List["Coupon"]]] = relationship(back_populates="staff")

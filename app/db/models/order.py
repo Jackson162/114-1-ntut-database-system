@@ -14,6 +14,7 @@ from app.db.models.base import Base
 if TYPE_CHECKING:
     from app.db.models.customer import Customer
     from app.db.models.order_item import OrderItem
+    from app.db.models.coupon import Coupon
 
 
 class Order(Base):
@@ -40,7 +41,8 @@ class Order(Base):
     customer_account: Mapped[str] = mapped_column(ForeignKey("customer.account"), nullable=False)
 
     customer: Mapped["Customer"] = relationship(back_populates="orders")
-    items: Mapped[List["OrderItem"]] = relationship(back_populates="order")
+    order_items: Mapped[List["OrderItem"]] = relationship(back_populates="order")
+    coupon: Mapped["Coupon"] = relationship(back_populates="orders")
 
     __table_args__ = (
         CheckConstraint(total_price >= 0, name="total_price_non_negative"),

@@ -4,7 +4,7 @@ Class definition for Coupon
 
 from datetime import date
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 
 from uuid import UUID
 
@@ -16,6 +16,7 @@ from app.db.models.base import Base
 if TYPE_CHECKING:
     from app.db.models.admin import Admin
     from app.db.models.staff import Staff
+    from app.db.models.order import Order
 
 
 class Coupon(Base):
@@ -37,6 +38,7 @@ class Coupon(Base):
 
     admin: Mapped[Optional["Admin"]] = relationship(back_populates="coupons")
     staff: Mapped[Optional["Staff"]] = relationship(back_populates="coupons")
+    orders: Mapped[List["Order"]] = relationship(back_populates="coupon")
 
     __table_args__ = (
         CheckConstraint(
