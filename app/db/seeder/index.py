@@ -30,6 +30,21 @@ from app.db.models.order_item import OrderItem
 ADMIN_ACCOUNT = "admin_001"
 CUSTOMER_ACCOUNT = "customer_A"
 STAFF_ACCOUNT = "staff_B"
+
+# [新增] 第二個顧客與書店的識別常數
+CUSTOMER_ACCOUNT_B = "customer_B"
+BOOKSTORE_NAME_2 = "Second Page Bookstore"
+
+# ... (現有的 UUID 定義)
+BOOKSTORE_UUID = generate_deterministic_uuid("Bookworm Bookstore")
+
+# [新增] 第二個書店的固定 UUID
+BOOKSTORE_UUID_2 = generate_deterministic_uuid(BOOKSTORE_NAME_2)
+# 為了讓新書店有書賣，我們也為它建立商品關聯 (BookBookstoreMapping) 的 UUID
+BBM_UUID_3 = generate_deterministic_uuid("BBM_Python_SecondPage")
+BBM_UUID_4 = generate_deterministic_uuid("BBM_SQLA_SecondPage")
+# 為新顧客建立購物車 UUID
+CART_UUID_B = generate_deterministic_uuid(CUSTOMER_ACCOUNT_B + "_cart")
 # 安全性修正: 從環境變數讀取密碼，若未設定則使用預設值 (僅供開發用)
 DEFAULT_PASSWORD = os.getenv("SEED_USER_PASSWORD", "123")
 
@@ -180,6 +195,52 @@ async def seed_data():
             cart_id=CART_UUID,
             book_bookstore_mapping_id=BBM_UUID_2,
         )
+        
+        # [新增] Customer B (db/models/customer.py)
+        customer_b = Customer(
+            account=CUSTOMER_ACCOUNT_B,
+            name="李小華",
+            password=hashed_password,
+            phone_number="0998765432",
+            email="hua@example.com",
+            address="台中市西屯區台灣大道三段99號",
+        )
+
+        # [新增] Bookstore 2 (db/models/bookstore.py)
+        bookstore_2 = Bookstore(
+            bookstore_id=BOOKSTORE_UUID_2,
+            name="Second Page 書店",
+            phone_number="0423456789",
+            email="second@store.com",
+            address="高雄市前鎮區三多三路213號",
+            shipping_fee=50,
+        )
+
+        # ... (現有的 Staff, Book 建立程式碼)
+
+        # [新增] 為新書店上架現有的書籍 (BookBookstoreMapping)
+        # 讓這家書店的價格稍微不同，模擬真實情況
+        bbm_3 = BookBookstoreMapping(
+            book_bookstore_mapping_id=BBM_UUID_3,
+            price=520, # 另一家賣 550
+            store_quantity=30,
+            book_id=BOOK_UUID_1, # Python 資料庫應用
+            bookstore_id=BOOKSTORE_UUID_2,
+        )
+
+        bbm_4 = BookBookstoreMapping(
+            book_bookstore_mapping_id=BBM_UUID_4,
+            price=500, # 另一家賣 480
+            store_quantity=20,
+            book_id=BOOK_UUID_2, # 精通SQLAlchemy
+            bookstore_id=BOOKSTORE_UUID_2,
+        )
+
+        # [新增] 為新顧客建立購物車
+        shopping_cart_b = ShoppingCart(
+            cart_id=CART_UUID_B,
+            customer_account=CUSTOMER_ACCOUNT_B,
+        )
 
         # 效率優化: 移除 flush
 
@@ -233,7 +294,8 @@ async def seed_data():
             admin_user, customer, bookstore, staff_user, book_1, book_2,
             bbm_1, bbm_2, coupon,
             shopping_cart, cart_item_1, cart_item_2,
-            order, order_item_1, order_item_2
+            order, order_item_1, order_item_2,
+            customer_b, bookstore_2, bbm_3, bbm_4, shopping_cart_b
         ])
         
         await db.commit()
