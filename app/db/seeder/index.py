@@ -1,4 +1,5 @@
 import asyncio
+import os
 import uuid
 from datetime import date, timedelta
 from decimal import Decimal
@@ -29,8 +30,8 @@ from app.db.models.order_item import OrderItem
 ADMIN_ACCOUNT = "admin_001"
 CUSTOMER_ACCOUNT = "customer_A"
 STAFF_ACCOUNT = "staff_B"
-# 為方便測試，設定一個通用明文密碼
-DEFAULT_PASSWORD = "123"
+# 安全性修正: 從環境變數讀取密碼，若未設定則使用預設值 (僅供開發用)
+DEFAULT_PASSWORD = os.getenv("SEED_USER_PASSWORD", "123")
 
 # -----------------------------------------------------------
 # 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
@@ -122,8 +123,7 @@ async def seed_data():
             publish_date=date(2024, 1, 20),
         )
 
-        db.add_all([admin_user, customer, bookstore, staff_user, book_1, book_2])
-        await db.flush()  # 確保基礎資料的 ID 在本會話中可用
+        # 效率優化: 移除此處的 db.add_all 與 db.flush()，改至最後統一處理
 
         # 3. 中繼資料: BookBookstoreMapping, Coupon
 
@@ -155,8 +155,7 @@ async def seed_data():
             admin_account=ADMIN_ACCOUNT,
         )
 
-        db.add_all([bbm_1, bbm_2, coupon])
-        await db.flush()
+        # 效率優化: 移除 flush
 
         # 4. 購物車資料: ShoppingCart, CartItem
 
@@ -166,8 +165,7 @@ async def seed_data():
             customer_account=CUSTOMER_ACCOUNT,
         )
 
-        db.add(shopping_cart)
-        await db.flush()
+        # 效率優化: 移除 flush
 
         # CartItem 1 (db/models/cart_item.py) - 依賴 ShoppingCart, BookBookstoreMapping
         cart_item_1 = CartItem(
@@ -183,16 +181,13 @@ async def seed_data():
             book_bookstore_mapping_id=BBM_UUID_2,
         )
 
-        db.add_all([cart_item_1, cart_item_2])
-        await db.flush()
+        # 效率優化: 移除 flush
 
         # 5. 訂單資料: Order, OrderItem
 
         # 計算訂單總價 (含 10% 折扣和運費)
-        # 總書價: (550 * 1) + (480 * 2) = 550 + 960 = 1510
-        # 折扣後: 1510 * (1 - 0.10) = 1359
-        # 最終價格: 1359 + 60 (運費) = 1419
-        total_price = int(
+        # 正確性修正: 使用 round() 代替 int() 以避免精度問題
+        total_price = round(
             (bbm_1.price * cart_item_1.quantity + bbm_2.price * cart_item_2.quantity)
             * (1 - coupon.discount_percentage)
             + bookstore.shipping_fee
@@ -214,8 +209,7 @@ async def seed_data():
             customer_account=CUSTOMER_ACCOUNT,
         )
 
-        db.add(order)
-        await db.flush()
+        # 效率優化: 移除 flush
 
         # OrderItem 1 (db/models/order_item.py) - 依賴 Order, BookBookstoreMapping
         order_item_1 = OrderItem(
@@ -233,14 +227,21 @@ async def seed_data():
             book_bookstore_mapping_id=BBM_UUID_2,
         )
 
-        db.add_all([order_item_1, order_item_2])
-
         # 6. 提交事務
+        # 效率優化: 將所有物件一次性加入 Session 並提交
+        db.add_all([
+            admin_user, customer, bookstore, staff_user, book_1, book_2,
+            bbm_1, bbm_2, coupon,
+            shopping_cart, cart_item_1, cart_item_2,
+            order, order_item_1, order_item_2
+        ])
+        
         await db.commit()
         print("--- 資料填充成功完成 ---")
-        print(f"成功創建的管理員帳號: {ADMIN_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
-        print(f"成功創建的客戶帳號: {CUSTOMER_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
-        print(f"成功創建的員工帳號: {STAFF_ACCOUNT}, 密碼: {DEFAULT_PASSWORD}")
+        # 安全性修正: 移除在控制台中印出密碼的行為
+        print(f"成功創建的管理員帳號: {ADMIN_ACCOUNT}")
+        print(f"成功創建的客戶帳號: {CUSTOMER_ACCOUNT}")
+        print(f"成功創建的員工帳號: {STAFF_ACCOUNT}")
 
 
 if __name__ == "__main__":
