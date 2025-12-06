@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.db.db import session_factory, engine
 
 # 導入密碼雜湊工具
-from app.util.auth import hash_password 
+from app.util.auth import hash_password
 
 # 導入所有 ORM 模型
 from app.db.models.admin import Admin
@@ -23,6 +23,16 @@ from app.db.models.shopping_cart import ShoppingCart
 from app.db.models.cart_item import CartItem
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
+
+
+# -----------------------------------------------------------
+# 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
+# -----------------------------------------------------------
+def generate_deterministic_uuid(name: str) -> uuid.UUID:
+    """Generates a reproducible UUID based on a namespace and a fixed name."""
+    # 使用 uuid.NAMESPACE_DNS 作為命名空間，確保結果固定
+    return uuid.uuid5(uuid.NAMESPACE_DNS, name)
+
 
 # -----------------------------------------------------------
 # 定義範例資料的 ID (用於連結外鍵)
@@ -48,13 +58,6 @@ CART_UUID_B = generate_deterministic_uuid(CUSTOMER_ACCOUNT_B + "_cart")
 # 安全性修正: 從環境變數讀取密碼，若未設定則使用預設值 (僅供開發用)
 DEFAULT_PASSWORD = os.getenv("SEED_USER_PASSWORD", "123")
 
-# -----------------------------------------------------------
-# 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
-# -----------------------------------------------------------
-def generate_deterministic_uuid(name: str) -> uuid.UUID:
-    """Generates a reproducible UUID based on a namespace and a fixed name."""
-    # 使用 uuid.NAMESPACE_DNS 作為命名空間，確保結果固定
-    return uuid.uuid5(uuid.NAMESPACE_DNS, name)
 
 # 固定的 UUID 以便測試和重現
 # 使用 generate_deterministic_uuid 函式根據名稱生成，確保 UUID 穩定不變
@@ -74,7 +77,7 @@ async def seed_data():
     """
     # 預先雜湊密碼
     hashed_password = hash_password(DEFAULT_PASSWORD)
-    
+
     # 1. 獲取一個新的非同步會話
     async with session_factory() as db:
         print("--- 開始資料填充程序 ---")
@@ -85,7 +88,7 @@ async def seed_data():
         admin_user = Admin(
             account=ADMIN_ACCOUNT,
             name="系統管理員",
-            password=hashed_password, 
+            password=hashed_password,
         )
 
         # Customer (db/models/customer.py)
@@ -195,7 +198,7 @@ async def seed_data():
             cart_id=CART_UUID,
             book_bookstore_mapping_id=BBM_UUID_2,
         )
-        
+
         # [新增] Customer B (db/models/customer.py)
         customer_b = Customer(
             account=CUSTOMER_ACCOUNT_B,
@@ -222,17 +225,17 @@ async def seed_data():
         # 讓這家書店的價格稍微不同，模擬真實情況
         bbm_3 = BookBookstoreMapping(
             book_bookstore_mapping_id=BBM_UUID_3,
-            price=520, # 另一家賣 550
+            price=520,  # 另一家賣 550
             store_quantity=30,
-            book_id=BOOK_UUID_1, # Python 資料庫應用
+            book_id=BOOK_UUID_1,  # Python 資料庫應用
             bookstore_id=BOOKSTORE_UUID_2,
         )
 
         bbm_4 = BookBookstoreMapping(
             book_bookstore_mapping_id=BBM_UUID_4,
-            price=500, # 另一家賣 480
+            price=500,  # 另一家賣 480
             store_quantity=20,
-            book_id=BOOK_UUID_2, # 精通SQLAlchemy
+            book_id=BOOK_UUID_2,  # 精通SQLAlchemy
             bookstore_id=BOOKSTORE_UUID_2,
         )
 
@@ -290,14 +293,31 @@ async def seed_data():
 
         # 6. 提交事務
         # 效率優化: 將所有物件一次性加入 Session 並提交
-        db.add_all([
-            admin_user, customer, bookstore, staff_user, book_1, book_2,
-            bbm_1, bbm_2, coupon,
-            shopping_cart, cart_item_1, cart_item_2,
-            order, order_item_1, order_item_2,
-            customer_b, bookstore_2, bbm_3, bbm_4, shopping_cart_b
-        ])
-        
+        db.add_all(
+            [
+                admin_user,
+                customer,
+                bookstore,
+                staff_user,
+                book_1,
+                book_2,
+                bbm_1,
+                bbm_2,
+                coupon,
+                shopping_cart,
+                cart_item_1,
+                cart_item_2,
+                order,
+                order_item_1,
+                order_item_2,
+                customer_b,
+                bookstore_2,
+                bbm_3,
+                bbm_4,
+                shopping_cart_b,
+            ]
+        )
+
         await db.commit()
         print("--- 資料填充成功完成 ---")
         # 安全性修正: 移除在控制台中印出密碼的行為
