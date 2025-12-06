@@ -1,0 +1,57 @@
+
+# --- General ---
+.DS_Store # macOS files
+.vscode/ # VS Code settings
+*.log # Log files
+npm-debug.log* # npm debug logs
+pnpm-debug.log* # pnpm debug logs
+
+# --- Build and Distribution ---
+/dist/ # Common directory for compiled/built code
+/build/ # Another common build directory
+/node_modules/ # Node.js dependency folder
+*.o # Object files
+*.a # Static libraries
+*.dll # Windows dynamic link libraries
+*.so # Shared object files
+
+# --- IDE and Editor Specific ---
+.idea/ # IntelliJ IDEA project files
+.project # Eclipse project files
+.classpath # Eclipse classpath
+*.swp # Vim swap files
+*~ # Emacs temporary files
+
+# --- Operating System ---
+Thumbs.db # Windows thumbnail cache
+.DS_Store # macOS hidden file
+.localized # macOS localization file
+Icon? # macOS icon files
+
+# --- Temporary Files and Archives ---
+/tmp/ # Temporary folder
+*.tmp # Temporary files
+*.zip # Zip archives
+*.tar # Tar archives
+*.gz # Gzip archives
+
+# --- Secret and Personal ---
+# Keep these out of version control!
+.env # Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config.json # You might have a config file with secrets
+credentials.txt # A file for credentials
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+.DS_Store
+.env
+.venv
+postgres-data

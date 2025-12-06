@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+
+    <h1>Register for an Account</h1>
+
+    {% if register_error %}
+        <div class="error" style="color: red;">
+            <h2>Registration Error</h2>
+            <p>{{ register_error }}</p>
+        </div>
+    {% endif %}
+
+    <form method="post" action="/auth/register">
+        <label for="account">Account:</label><br>
+        <input type="text" id="account" name="account" required><br><br>
+        
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="phone_number">Phone Numbers:</label><br>
+        <input type="text" id="phone_number" name="phone_number"><br><br>
+
+        <label for="role">Role:</label><br>
+        <select id="role" name="role">
+            <option value="customer">Customer</option>
+            <option value="staff">Staff</option>
+        </select><br><br>
+
+        <input type="submit" value="Register">
+    </form>
+
+</body>
+</html>
