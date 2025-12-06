@@ -24,6 +24,15 @@ from app.db.models.cart_item import CartItem
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 
+
+# -----------------------------------------------------------
+# 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
+# -----------------------------------------------------------
+def generate_deterministic_uuid(name: str) -> uuid.UUID:
+    """Generates a reproducible UUID based on a namespace and a fixed name."""
+    # 使用 uuid.NAMESPACE_DNS 作為命名空間，確保結果固定
+    return uuid.uuid5(uuid.NAMESPACE_DNS, name)
+    
 # -----------------------------------------------------------
 # 定義範例資料的 ID (用於連結外鍵)
 # -----------------------------------------------------------
@@ -47,14 +56,6 @@ BBM_UUID_4 = generate_deterministic_uuid("BBM_SQLA_SecondPage")
 CART_UUID_B = generate_deterministic_uuid(CUSTOMER_ACCOUNT_B + "_cart")
 # 安全性修正: 從環境變數讀取密碼，若未設定則使用預設值 (僅供開發用)
 DEFAULT_PASSWORD = os.getenv("SEED_USER_PASSWORD", "123")
-
-# -----------------------------------------------------------
-# 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
-# -----------------------------------------------------------
-def generate_deterministic_uuid(name: str) -> uuid.UUID:
-    """Generates a reproducible UUID based on a namespace and a fixed name."""
-    # 使用 uuid.NAMESPACE_DNS 作為命名空間，確保結果固定
-    return uuid.uuid5(uuid.NAMESPACE_DNS, name)
 
 # 固定的 UUID 以便測試和重現
 # 使用 generate_deterministic_uuid 函式根據名稱生成，確保 UUID 穩定不變
