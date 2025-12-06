@@ -1,3 +1,7 @@
+# No clue about building an e-commerce with shopping-cart system?
+check Jackson's previous e-commerce project
+https://github.com/Jackson162/oasis_e-commerce
+
 # Local Development
 Use python 3.12.9
 
@@ -35,6 +39,24 @@ set up your .env and if it is your first time running the server or there is new
 8.
 go to vscode debugger and press green arrow to run server
 
+9.
+run seeder to insert data for development
+
+```
+export PYTHONPATH=$(pwd)
+
+./.venv/bin/python /{YOUR_LOCAL_PATH}/ntut_database_systems/app/db/seeder/index.py
+
+```
+
+# fix error: module 'app' not found
+```
+export PYTHONPATH=$(pwd)
+echo $PYTHONPATH
+```
+
+# API Document
+http://localhost:8000/docs
 
 # DB Migrations
 ## create migration files
