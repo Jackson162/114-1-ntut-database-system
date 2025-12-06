@@ -91,7 +91,7 @@ async def login(
                 value=auth_token,
                 max_age=expires_in_seconds,
                 httponly=True,
-                secure=False,  # True ori
+                secure=True,
                 samesite="lax",
                 path="/",
             )
