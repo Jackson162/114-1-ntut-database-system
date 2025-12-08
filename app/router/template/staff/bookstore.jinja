@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore Management</title>
+</head>
+<body>
+    {% if get_staff_bookstore_error %}
+        <h2>Error to get staff's bookstore information</h2>
+        <p>{{ get_staff_bookstore_error }}</p>
+    {% else %}
+        {% if bookstore is none %}
+            <h2>You do not belong to any bookstore.</h2>
+            <p>Apply for a bookstore below:</p>
+            <form action="/staffs/bookstores/create" method="post">
+                <label for="name">Bookstore Name:</label><br>
+                <input type="text" id="name" name="name"><br>
+                <label for="phone_number">Phone Number:</label><br>
+                <input type="text" id="phone_number" name="phone_number"><br>
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email"><br>
+                <label for="address">Address:</label><br>
+                <input type="text" id="address" name="address"><br>
+                <label for="shipping_fee">Shipping Fee:</label><br>
+                <input type="number" id="shipping_fee" name="shipping_fee"><br><br>
+                <input type="submit" value="Apply">
+            </form>
+            {% if create_staff_bookstore_error %}
+                <h2>Error to apply a bookstore</h2>
+                <p>{{ create_staff_bookstore_error }}</p>
+            {% else %}
+
+        {% else %}
+            <h2>Bookstore Information</h2>
+            <p><strong>Name:</strong> {{ bookstore.name }}</p>
+            <p><strong>Phone:</strong> {{ bookstore.phone_number }}</p>
+            <p><strong>Email:</strong> {{ bookstore.email }}</p>
+            <p><strong>Address:</strong> {{ bookstore.address }}</p>
+
+            {% if bookstore.verified %}
+                <p><strong>Status:</strong> Verified</p>
+                <button onclick="location.href='/staff/book-stock'">Book Stock</button>
+                <button onclick="location.href='/staff/orders'">Orders</button>
+                <button onclick="location.href='/staff/create-staff'">Create Staff</button>
+            {% else %}
+                <p><strong>Status:</strong> Verification is still undergoing.</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</body>
+</html>

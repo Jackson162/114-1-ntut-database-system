@@ -16,7 +16,7 @@ router = APIRouter()
 validate_staff_token = validate_token_by_role(UserRole.STAFF)
 
 
-@router.post("/bookstore/create", response_class=RedirectResponse)
+@router.post("/bookstores/create", response_class=RedirectResponse)
 async def create_staff_bookstore(
     request: Request,
     name: Annotated[str, Form()],
@@ -43,10 +43,10 @@ async def create_staff_bookstore(
         )
 
         await update_staff(db=db, account=staff.account, bookstore_id=bookstore.bookstore_id)
-        redirect_url = ""
+        redirect_url = "/frontend/staffs/bookstores"
         await db.commit()
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
-    except Exception:
+    except Exception as err:
         await db.rollback()
-        redirect_url = ""
+        redirect_url = f"/frontend/staffs/bookstores?create_staff_bookstore_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

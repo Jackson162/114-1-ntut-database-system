@@ -7,6 +7,12 @@ from sqlalchemy import select
 from app.db.models.bookstore import Bookstore
 
 
+async def get_bookstore_by_id(db: AsyncSession, bookstore_id: UUID):
+    query = select(Bookstore).where(Bookstore.id == bookstore_id)
+    result = await db.execute(query)
+    return result.scalars().one()
+
+
 async def create_bookstore(
     db: AsyncSession,
     name: str,
