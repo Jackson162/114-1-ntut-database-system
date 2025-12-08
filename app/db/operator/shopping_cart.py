@@ -1,7 +1,8 @@
 from uuid import UUID
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, update, and_
+from sqlalchemy import select, insert, update, and_, delete
+from sqlalchemy.orm import selectinload
 
 # from sqlalchemy.orm import selectinload
 
@@ -12,7 +13,22 @@ from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 # 取得cart
 async def get_cart_by_account(db: AsyncSession, account: str) -> Optional[ShoppingCart]:
+    """
     stmt = select(ShoppingCart).where(ShoppingCart.customer_account == account)
+    result = await db.execute(stmt)
+    return result.scalars().first()
+    """
+    stmt = (
+        select(ShoppingCart)
+        .where(ShoppingCart.customer_account == account)
+        .options(
+            selectinload(ShoppingCart.cart_items).options(
+                selectinload(CartItem.book_bookstore_mapping).options(
+                    selectinload(BookBookstoreMapping.book)
+                )
+            )
+        )
+    )
     result = await db.execute(stmt)
     return result.scalars().first()
 
@@ -58,4 +74,10 @@ async def create_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID, qu
     stmt = insert(CartItem).values(
         cart_id=cart_id, book_bookstore_mapping_id=mapping_id, quantity=quantity
     )
+    await db.execute(stmt)
+
+
+# 清空購物車項目
+async def clear_cart_items(db: AsyncSession, cart_id: UUID):
+    stmt = delete(CartItem).where(CartItem.cart_id == cart_id)
     await db.execute(stmt)
