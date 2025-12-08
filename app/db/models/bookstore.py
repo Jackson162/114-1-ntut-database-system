@@ -30,7 +30,7 @@ class Bookstore(Base):
     email: Mapped[Optional[str]] = mapped_column(Text)
     address: Mapped[Optional[str]] = mapped_column(Text)
     shipping_fee: Mapped[int] = mapped_column(Integer, nullable=False)
-    verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    verified: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
     staffs: Mapped[List["Staff"]] = relationship(back_populates="bookstore")
