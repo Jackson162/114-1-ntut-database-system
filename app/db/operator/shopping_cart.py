@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, and_
 
@@ -9,61 +10,52 @@ from app.db.models.cart_item import CartItem
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
-async def add_item_to_cart(
-    db: AsyncSession, customer_account: str, book_id: UUID, price: int, quantity: int
-):
-    # 1. 先確認該使用者有沒有購物車
-    stmt = select(ShoppingCart).where(ShoppingCart.customer_account == customer_account)
+# 取得cart
+async def get_cart_by_account(db: AsyncSession, account: str) -> Optional[ShoppingCart]:
+    stmt = select(ShoppingCart).where(ShoppingCart.customer_account == account)
     result = await db.execute(stmt)
-    cart = result.scalars().first()
+    return result.scalars().first()
 
-    # 如果沒有購物車，就幫他建立一個
-    if not cart:
-        stmt_create_cart = (
-            insert(ShoppingCart).values(customer_account=customer_account).returning(ShoppingCart)
-        )
-        result_create = await db.execute(stmt_create_cart)
-        cart = result_create.scalars().one()
-        # 注意：這裡還沒 commit，最後一起 commit
 
-    # 2. 找出對應的 Mapping ID
-    # 因為系統設計是 BookBookstoreMapping 決定價格，所以要用 book_id + price 反查
-    stmt_mapping = select(BookBookstoreMapping).where(
-        and_(BookBookstoreMapping.book_id == book_id, BookBookstoreMapping.price == price)
-    )
-    result_mapping = await db.execute(stmt_mapping)
-    mapping = result_mapping.scalars().first()
+# 建立cart
+async def create_cart(db: AsyncSession, account: str) -> ShoppingCart:
+    stmt = insert(ShoppingCart).values(customer_account=account).returning(ShoppingCart)
+    result = await db.execute(stmt)
+    return result.scalars().one()
 
-    if not mapping:
-        raise Exception("找不到該價格的書籍商品 (Book not found with the given price)")
 
-    # 3. 檢查購物車內是否已經有這個商品
-    stmt_item = select(CartItem).where(
+# mapping
+async def get_book_mapping(
+    db: AsyncSession, book_id: UUID, bookstore_id: UUID
+) -> Optional[BookBookstoreMapping]:
+    stmt = select(BookBookstoreMapping).where(
         and_(
-            CartItem.cart_id == cart.cart_id,
-            CartItem.book_bookstore_mapping_id == mapping.book_bookstore_mapping_id,
+            BookBookstoreMapping.book_id == book_id,
+            BookBookstoreMapping.bookstore_id == bookstore_id,
         )
     )
-    result_item = await db.execute(stmt_item)
-    existing_item = result_item.scalars().first()
+    result = await db.execute(stmt)
+    return result.scalars().first()
 
-    if existing_item:
-        # A. 如果已存在，就更新數量 (原本數量 + 新增數量)
-        stmt_update = (
-            update(CartItem)
-            .where(CartItem.cart_item_id == existing_item.cart_item_id)
-            .values(quantity=existing_item.quantity + quantity)
-        )
-        await db.execute(stmt_update)
-    else:
-        # B. 如果不存在，就新增一筆
-        stmt_insert = insert(CartItem).values(
-            cart_id=cart.cart_id,
-            book_bookstore_mapping_id=mapping.book_bookstore_mapping_id,
-            quantity=quantity,
-        )
-        await db.execute(stmt_insert)
 
-    # 4. 全部完成後，提交變更
-    await db.commit()
-    return True
+# 取得cart的商品
+async def get_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID) -> Optional[CartItem]:
+    stmt = select(CartItem).where(
+        and_(CartItem.cart_id == cart_id, CartItem.book_bookstore_mapping_id == mapping_id)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().first()
+
+
+# 數量更新
+async def update_cart_item_quantity(db: AsyncSession, cart_item_id: UUID, quantity: int):
+    stmt = update(CartItem).where(CartItem.cart_item_id == cart_item_id).values(quantity=quantity)
+    await db.execute(stmt)
+
+
+# 新增商品
+async def create_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID, quantity: int):
+    stmt = insert(CartItem).values(
+        cart_id=cart_id, book_bookstore_mapping_id=mapping_id, quantity=quantity
+    )
+    await db.execute(stmt)
