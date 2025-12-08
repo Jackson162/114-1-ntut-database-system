@@ -66,7 +66,7 @@ async def login(
                 next_page_path = "/frontend/auth/user_login_succeeded"
             elif role == UserRole.STAFF.value:
                 user = await get_staff_by_account(db=db, account=account)
-                next_page_path = "/frontend/auth/staff_login_succeeded"
+                next_page_path = "/frontend/staffs/bookstores"
             elif role == UserRole.ADMIN.value:
                 user = await get_admin_by_account(db=db, account=account)
                 next_page_path = "/frontend/auth/admin_login_succeeded"

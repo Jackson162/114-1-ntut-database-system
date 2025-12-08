@@ -21,9 +21,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(frontend.router, prefix="/frontend")
-app.include_router(auth.router, prefix="/auth")
-app.include_router(staff.router, prefix="/staffs")
+app.include_router(frontend.router, prefix="/frontend", tags=["frontend"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(staff.router, prefix="/staffs", tags=["staffs"])
 
 
 @app.exception_handler(Exception)

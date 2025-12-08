@@ -1,6 +1,5 @@
-from typing import Optional, Dict, Any
+from typing import Optional
 from uuid import UUID
-from app.db.models.staff import Staff
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select
@@ -8,7 +7,7 @@ from app.db.models.bookstore import Bookstore
 
 
 async def get_bookstore_by_id(db: AsyncSession, bookstore_id: UUID):
-    query = select(Bookstore).where(Bookstore.id == bookstore_id)
+    query = select(Bookstore).where(Bookstore.bookstore_id == bookstore_id)
     result = await db.execute(query)
     return result.scalars().one()
 

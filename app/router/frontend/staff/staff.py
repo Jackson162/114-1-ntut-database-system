@@ -10,7 +10,10 @@ from app.db.models.customer import Customer
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
+from app.router.schema.bookstore import BookstoreSchema
+from app.logging.logger import get_logger
 
+logger = get_logger()
 
 router = APIRouter()
 
@@ -30,16 +33,17 @@ async def get_staff_bookstore(
 
     try:
         bookstore = await get_bookstore_by_id(db=db, bookstore_id=staff.bookstore_id)
-        bookstore = bookstore.dict()
+        bookstore_dict = BookstoreSchema.from_orm(bookstore).dict()
     except NoResultFound:
-        bookstore = None
+        bookstore_dict = None
     except Exception as err:
+        logger.error(err)
         get_staff_bookstore_error = repr(err)
-        bookstore = None
+        bookstore_dict = None
 
     context = {
         "request": request,
-        "bookstore": bookstore,
+        "bookstore": bookstore_dict,
         "get_staff_bookstore_error": get_staff_bookstore_error,
         "create_staff_bookstore_error": None,
     }
