@@ -10,6 +10,7 @@ from app.db.models.customer import Customer
 from app.db.operator.order import get_orders_by_customer_account
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
+from app.router.schema.sqlachemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
 
 
 router = APIRouter()
@@ -27,18 +28,33 @@ async def get_customer_orders(
     list_order_error = None
     try:
         orders = await get_orders_by_customer_account(db=db, customer_account=customer.account)
-    except NoResultFound:
-        orders = []
-    except Exception as err:
-        orders = []
-        list_order_error = repr(err)
 
-    orders = [order.dict() for order in orders]
+        order_dicts = []
+
+        for order in orders:
+            order_dict = OrderSchema.from_orm(order).dict()
+            order_dict["order_items"] = []
+            order_dicts.append(order_dict)
+
+            for item in order.order_items:
+                item_dict = OrderItemSchema.from_orm(item).dict()
+                book = BookSchema.from_orm(item.book_bookstore_mapping.book).dict()
+                bookstore = BookstoreSchema.from_orm(item.book_bookstore_mapping.bookstore).dict()
+                item_dict["book"] = book
+                item_dict["bookstore"] = bookstore
+
+                order_dict["order_items"].append(item_dict)
+
+    except NoResultFound:
+        order_dicts = []
+    except Exception as err:
+        order_dicts = []
+        list_order_error = repr(err)
 
     context = {
         "request": request,
         "customer": customer,
-        "orders": orders,
+        "orders": order_dicts,
         "list_order_error": list_order_error,
     }
 
