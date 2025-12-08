@@ -35,3 +35,33 @@ async def create_staff(
 
     if auto_commit:
         await db.commit()
+
+
+async def update_staff(
+    db: AsyncSession,
+    account: str,
+    name: Optional[str] = None,
+    password: Optional[str] = None,
+    bookstore_id: Optional[UUID] = None,
+    auto_commit: Optional[bool] = False,
+):
+    query = select(Staff).where(Staff.account == account)
+    result = await db.execute(query)
+    staff = result.scalars().one()
+
+    if name is not None:
+        staff.name = name
+
+    if password is not None:
+        staff.password = password
+
+    if bookstore_id is not None:
+        staff.bookstore_id = bookstore_id
+
+    db.add(staff)
+    await db.flush()
+
+    if auto_commit:
+        await db.commit()
+
+    return staff
