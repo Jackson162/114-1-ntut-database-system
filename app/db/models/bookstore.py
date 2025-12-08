@@ -5,7 +5,7 @@ Class definition for Bookstore
 from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID
 
-from sqlalchemy import Integer, Text, text, CHAR, CheckConstraint
+from sqlalchemy import Integer, Text, text, CHAR, CheckConstraint, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -30,6 +30,7 @@ class Bookstore(Base):
     email: Mapped[Optional[str]] = mapped_column(Text)
     address: Mapped[Optional[str]] = mapped_column(Text)
     shipping_fee: Mapped[int] = mapped_column(Integer, nullable=False)
+    verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Relationships
     staffs: Mapped[List["Staff"]] = relationship(back_populates="bookstore")

@@ -1,5 +1,5 @@
 # No clue about building an e-commerce with shopping-cart system?
-check Jackson's previous e-commerce project
+check out Jackson's previous e-commerce project
 https://github.com/Jackson162/oasis_e-commerce
 
 # Local Development
@@ -74,3 +74,8 @@ If you change the model files in `app/database/models`,
    
 ## do db migration
 1. set the env variable: `DO_INIT_DB` to true, and run the server.
+   
+# db migration downgrade
+```
+./.venv/bin/python -m alembic downgrade head-1
+```
