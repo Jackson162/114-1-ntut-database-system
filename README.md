@@ -79,3 +79,36 @@ If you change the model files in `app/database/models`,
 ```
 ./.venv/bin/python -m alembic downgrade head-1
 ```
+
+# Git Flow for development
+1. pull latest remote main to your local main
+```
+git pull origin main
+
+```
+2. create a new local branch
+```
+git checkout -b NEW-BRANCH-NAME
+```
+
+3. Push branch to remote
+```
+git push origin NEW-BRANCH-NAME
+```
+
+4. create Pull Request for review
+   
+# Git Flow for solving merge conflict
+1. In your new local branch, pull remote main
+```
+git pull origin main
+```
+
+2. solve merge conflict (ask the other guy if you are not sure what to keep)
+
+3. commit solved conflict
+
+4. Push branch to remote
+```
+git push origin NEW-BRANCH-NAME
+```
