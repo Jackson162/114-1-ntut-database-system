@@ -24,6 +24,9 @@ from app.db.models.cart_item import CartItem
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 
+from app.enum.coupon import CouponType
+from app.util.coupon import apply_coupon
+
 
 # -----------------------------------------------------------
 # 輔助函式：使用 uuid.uuid5 根據名稱生成固定的 UUID，確保每次運行結果一致
@@ -80,6 +83,7 @@ async def seed_data():
 
     # 1. 獲取一個新的非同步會話
     async with session_factory() as db:
+
         print("--- 開始資料填充程序 ---")
 
         # 2. 基礎資料: Admin, Customer, Bookstore, Staff, Book
@@ -166,7 +170,8 @@ async def seed_data():
         # Coupon (db/models/coupon.py) - 依賴 Admin
         coupon = Coupon(
             coupon_id=COUPON_UUID,
-            type="新客折扣",
+            name="新客折扣",
+            type=CouponType.SPECIAL_EVENT.value,
             discount_percentage=Decimal("0.10"),  # 10% 折扣
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
@@ -249,11 +254,10 @@ async def seed_data():
 
         # 5. 訂單資料: Order, OrderItem
 
-        # 計算訂單總價 (含 10% 折扣和運費)
-        # 正確性修正: 使用 round() 代替 int() 以避免精度問題
-        total_price = round(
-            (bbm_1.price * cart_item_1.quantity + bbm_2.price * cart_item_2.quantity)
-            * (1 - coupon.discount_percentage)
+        # 計算訂單總價 (不含 10% 折扣)
+        total_price = (
+            bbm_1.price * cart_item_1.quantity
+            + bbm_2.price * cart_item_2.quantity
             + bookstore.shipping_fee
         )
 
@@ -272,6 +276,8 @@ async def seed_data():
             coupon_id=COUPON_UUID,
             customer_account=CUSTOMER_ACCOUNT,
         )
+
+        order = apply_coupon(coupon=coupon, order=order)
 
         # 效率優化: 移除 flush
 
