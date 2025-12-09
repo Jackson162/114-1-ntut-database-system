@@ -37,7 +37,6 @@ class BookstoreSchema(BaseModel):
     email: Optional[str] = None
     address: Optional[str] = None
     shipping_fee: int
-    verified: bool
 
     class Config:
         orm_mode = True
