@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy import Date, ForeignKey, Numeric, Text, text, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.enum.coupon import CouponType
 
 from app.db.models.base import Base
 
@@ -29,7 +30,8 @@ class Coupon(Base):
     coupon_id: Mapped[UUID] = mapped_column(
         primary_key=True, server_default=text("gen_random_uuid()")
     )
-    type: Mapped[str] = mapped_column(Text, nullable=False)
+    name: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    type: Mapped[CouponType] = mapped_column(Text, nullable=False)
     discount_percentage: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[Optional[date]] = mapped_column(Date)
