@@ -1,0 +1,19 @@
+{
+    //"python-envs.pythonProjects": [],
+     "files.associations": {
+        ".jinja": "jinja-html",
+        ".j2": "jinja-html"
+    },
+
+   "[python]": {
+    "editor.formatOnSave": true,
+    // "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  "flake8.enabled": true,
+}
