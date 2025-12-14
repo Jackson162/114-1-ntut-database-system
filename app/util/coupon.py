@@ -12,8 +12,8 @@ logger = get_logger()
 def apply_coupon(
     coupon: Coupon,
     order: Order,
-    coupon_bookstore_id: Optional[UUID],
-    order_bookstore_id: Optional[UUID],
+    coupon_bookstore_id: Optional[UUID] = None,
+    order_bookstore_id: Optional[UUID] = None,
 ):
     if coupon.staff_account:
         if not coupon_bookstore_id or not order_bookstore_id:
