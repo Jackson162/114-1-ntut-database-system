@@ -25,6 +25,7 @@ from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 
 from app.enum.coupon import CouponType
+from app.enum.order import OrderStatus
 from app.util.coupon import apply_coupon
 
 
@@ -268,7 +269,7 @@ async def seed_data():
             customer_name=customer.name,
             customer_phone_number=customer.phone_number,
             customer_email=customer.email,
-            status="待出貨",
+            status=OrderStatus.DELIVERING.value,
             total_price=total_price,
             shipping_address=customer.address,
             shipping_fee=bookstore.shipping_fee,
