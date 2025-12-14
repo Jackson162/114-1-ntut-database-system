@@ -6,6 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
+from app.enum.order import OrderStatus
 from app.db.models.staff import Staff
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.db.operator.order import get_orders_by_bookstore_id
@@ -60,6 +61,7 @@ async def get_staff_bookstore(
 @router.get("/orders")
 async def get_staff_orders(
     request: Request,
+    update_order_error: Optional[str] = None,
     login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -94,7 +96,9 @@ async def get_staff_orders(
         "request": request,
         "staff": staff,
         "orders": order_dicts,
+        "order_statuses": [status.value for status in OrderStatus],
         "list_order_error": list_order_error,
+        "update_order_error": update_order_error,
     }
 
     return templates.TemplateResponse(

@@ -33,6 +33,12 @@
                 <p><strong>Error:</strong> {{ list_order_error }}</p>
             </div>
         {% endif %}
+        {% if update_order_error %}
+            <div class="error">
+                <p>Update Order Error</p>
+                <p><strong>Error:</strong> {{ list_order_error }}</p>
+            </div>
+        {% endif %}
 
         {% if orders %}
             {% for order in orders %}
@@ -56,10 +62,19 @@
                             <li>This order has no items.</li>
                         {% endfor %}
                     </ul>
-                     <div class="total">
+                    <div class="total">
                         Total: ${{ "%.2f"|format(order.total_price) }}
                     </div>
                 </div>
+                <form id="update-order-status-form" method="post" action="/staffs/orders/update">
+                    <input type="hidden" value="{{order.order_id}}" name="order_id" id="order-id-{{order.order_id}}-input"><br><br>
+                    <select id="update-order-status-select" name="order_status">
+                        {% for order_status in order_statuses %}
+                        <option value="{{ order_status }}">{{ order_status }}</option>
+                        {% endfor %}
+                    </select><br><br>
+                    <input type="submit" value="update order status">
+                </form>
             {% endfor %}
         {% else %}
             <p class="no-orders">No orders yet.</p>

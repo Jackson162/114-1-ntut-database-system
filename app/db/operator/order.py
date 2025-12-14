@@ -1,11 +1,11 @@
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload, joinedload
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
-from app.db.models.book import Book
+from app.enum.order import OrderStatus
 
 
 async def get_orders_by_customer_account(db: AsyncSession, customer_account: str):
@@ -59,3 +59,8 @@ async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
 
     result = await db.execute(query)
     return list(result.scalars().all())
+
+
+async def update_order(db: AsyncSession, order_id: UUID, order_status: OrderStatus):
+    query = update(Order).where(Order.order_id == order_id).values(status=order_status)
+    await db.execute(query)
