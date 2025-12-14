@@ -12,8 +12,29 @@ from app.db.operator.admin import get_admin_by_account
 from app.db.operator.cart import create_shopping_cart
 from app.util.auth import hash_password, validate_password, generate_jwt
 from app.router.schema.auth import LoginData
+from starlette.requests import Request
+from app.router.template.index import templates
 
 router = APIRouter()
+
+# 引入 templates 必須在檔案頂部 (您可能已經有了，但這裡再次提醒)
+# from app.router.template.index import templates
+
+
+# 請將這段程式碼新增或移到 @router.post("/register") 之前
+@router.get("/register", response_class=HTMLResponse)
+async def register_page(
+    request: Request,
+    register_error: Optional[str] = None,
+) -> HTMLResponse:
+    context = {
+        "request": request,
+        "register_error": register_error,
+    }
+    # 注意: 這裡假設您在 app/router/template/index.py 中定義了 templates 變數
+    return templates.TemplateResponse(
+        "/auth/register.jinja", context=context, status_code=status.HTTP_200_OK
+    )
 
 
 @router.post("/register", response_class=RedirectResponse)
