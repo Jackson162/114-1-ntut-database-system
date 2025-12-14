@@ -6,11 +6,12 @@ from sqlalchemy.exc import NoResultFound
 from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
-from app.db.models.customer import Customer
+from app.db.models.staff import Staff
 from app.db.operator.bookstore import get_bookstore_by_id
+from app.db.operator.order import get_orders_by_bookstore_id
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
-from app.router.schema.sqlachemy import BookstoreSchema
+from app.router.schema.sqlachemy import BookstoreSchema, OrderSchema, OrderItemSchema, BookSchema
 from app.logging.logger import get_logger
 
 logger = get_logger()
@@ -24,7 +25,7 @@ validate_staff_token = validate_token_by_role(UserRole.STAFF)
 async def get_staff_bookstore(
     request: Request,
     create_staff_bookstore_error: Optional[str] = None,
-    login_data: Tuple[JwtPayload, Customer] = Depends(validate_staff_token),
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
     db: AsyncSession = Depends(get_db_session),
 ):
     _, staff = login_data
@@ -53,4 +54,49 @@ async def get_staff_bookstore(
 
     return templates.TemplateResponse(
         "/staff/bookstore.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/orders")
+async def get_staff_orders(
+    request: Request,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_payload, staff = login_data
+    list_order_error = None
+    try:
+        orders = await get_orders_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
+
+        order_dicts = []
+
+        for order in orders:
+            order_dict = OrderSchema.from_orm(order).dict()
+            order_dict["order_items"] = []
+            order_dicts.append(order_dict)
+
+            for item in order.order_items:
+                item_dict = OrderItemSchema.from_orm(item).dict()
+                book = BookSchema.from_orm(item.book_bookstore_mapping.book).dict()
+                bookstore = BookstoreSchema.from_orm(item.book_bookstore_mapping.bookstore).dict()
+                item_dict["book"] = book
+                item_dict["bookstore"] = bookstore
+
+                order_dict["order_items"].append(item_dict)
+
+    except NoResultFound:
+        order_dicts = []
+    except Exception as err:
+        order_dicts = []
+        list_order_error = repr(err)
+
+    context = {
+        "request": request,
+        "staff": staff,
+        "orders": order_dicts,
+        "list_order_error": list_order_error,
+    }
+
+    return templates.TemplateResponse(
+        "/staff/orders.jinja", context=context, status_code=status.HTTP_200_OK
     )
