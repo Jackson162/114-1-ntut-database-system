@@ -34,8 +34,8 @@
 </head>
 <body>
     <div class="container">
-        <a href="/frontend/products/books" class="back-link">← Back to Book List</a>
-
+        <a href="{{ url_for('list_books_page') }}" class="back-link">← Back to Book List</a>
+		
         {% if error %}
             <div class="error">
                 <h1>{{ error }}</h1>

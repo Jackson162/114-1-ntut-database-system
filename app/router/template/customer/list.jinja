@@ -43,11 +43,11 @@
     </div>
 
     <div class="search-bar">
-        <form action="/frontend/products/books" method="get">
+         <form action="{{ url_for('list_books_page') }}" method="get">
             <input type="text" name="keyword" placeholder="Search by book title or author..." value="{{ keyword }}">
             <input type="submit" value="Search" class="btn">
             {% if keyword %}
-                <a href="/frontend/products/books" style="align-self: center; margin-left: 10px; color: #666;">Clear</a>
+                <a href="/frontend/customer/books" style="align-self: center; margin-left: 10px; color: #666;">Clear</a>
             {% endif %}
         </form>
     </div>
@@ -62,7 +62,7 @@
                         Publisher: {{ book.publisher }}<br>
                         Category: {{ book.category }}
                     </div>
-                    <a href="/frontend/products/books/{{ book.book_id }}" class="btn" style="width: 90%; display: block;">View Details & Prices</a>
+                    <a href="/frontend/customer/books/{{ book.book_id }}" class="btn" style="width: 90%; display: block;">View Details & Prices</a>
                 </div>
             {% endfor %}
         </div>
