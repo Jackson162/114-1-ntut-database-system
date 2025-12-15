@@ -3,7 +3,7 @@ Class definition for Book
 """
 
 from datetime import date
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 from uuid import UUID
 
 from sqlalchemy import Date, Text, text, String
@@ -33,4 +33,7 @@ class Book(Base):
     series: Mapped[Optional[str]] = mapped_column(Text)
     publish_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(back_populates="book")
+    # Relationships
+    book_bookstore_mapping: Mapped[List["BookBookstoreMapping"]] = relationship(
+        back_populates="book"
+    )

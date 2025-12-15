@@ -1,5 +1,6 @@
-from typing import Tuple
-from fastapi import APIRouter, Depends, Request, status
+from typing import Optional, Tuple
+from uuid import UUID
+from fastapi import APIRouter, Depends, Request, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
@@ -8,7 +9,8 @@ from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.db.models.customer import Customer
 from app.db.operator.order import get_orders_by_customer_account
-from app.util.auth import JwtPayload
+from app.db.operator.book import get_books, get_book_with_details
+from app.util.auth import JwtPayload, decode_jwt
 from app.router.template.index import templates
 from app.router.schema.sqlachemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
 
@@ -61,3 +63,66 @@ async def get_customer_orders(
     return templates.TemplateResponse(
         "/customer/orders.jinja", context=context, status_code=status.HTTP_200_OK
     )
+    
+# Helper to get current user optionally (for displaying "Welcome, User" or login button)
+async def get_current_user_optional(request: Request) -> Optional[JwtPayload]:
+    token = request.cookies.get("auth_token")
+    if not token:
+        return None
+    try:
+        return decode_jwt(token)
+    except Exception:
+        return None
+
+@router.get("/books")
+async def list_books_page(
+    request: Request,
+    keyword: Optional[str] = Query(None, description="Search keyword"),
+    category: Optional[str] = Query(None, description="Filter by category"),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Page to list all books with search functionality.
+    """
+    books = await get_books(db=db, keyword=keyword, category=category)
+    user = await get_current_user_optional(request)
+
+    context = {
+        "request": request,
+        "books": books,
+        "keyword": keyword or "",
+        "user": user,
+    }
+    
+    return templates.TemplateResponse(
+        "/customer/list.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/books/{book_id}")
+async def book_detail_page(
+    request: Request,
+    book_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Page to show detailed info of a book and list of bookstores selling it.
+    """
+    book = await get_book_with_details(db=db, book_id=book_id)
+    user = await get_current_user_optional(request)
+
+    error_message = None
+    if not book:
+        error_message = "Book not found."
+
+    context = {
+        "request": request,
+        "book": book,
+        "user": user,
+        "error": error_message
+    }
+
+    return templates.TemplateResponse(
+        "/customer/detail.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+    

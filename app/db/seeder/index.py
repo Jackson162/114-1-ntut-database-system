@@ -3,6 +3,7 @@ import os
 import uuid
 from datetime import date, timedelta
 from decimal import Decimal
+from sqlalchemy import select
 
 # 從專案中導入設定和資料庫連線
 from app.core.config import settings
@@ -86,6 +87,14 @@ async def seed_data():
     async with session_factory() as db:
 
         print("--- 開始資料填充程序 ---")
+
+        # [新增] 檢查資料是否已存在，避免重複插入導致錯誤
+        stmt = select(Admin).where(Admin.account == ADMIN_ACCOUNT)
+        result = await db.execute(stmt)
+        if result.scalars().first():
+            print(f"警告: 管理員帳號 ({ADMIN_ACCOUNT}) 已存在，資料庫可能已填充過。")
+            print("--- 跳過資料填充 ---")
+            return
 
         # 2. 基礎資料: Admin, Customer, Bookstore, Staff, Book
 
@@ -278,7 +287,13 @@ async def seed_data():
             customer_account=CUSTOMER_ACCOUNT,
         )
 
-        order = apply_coupon(coupon=coupon, order=order)
+        # 修正: 傳入 None 作為書店 ID，因為這是管理員建立的優惠券
+        order = apply_coupon(
+            coupon=coupon, 
+            order=order, 
+            coupon_bookstore_id=None, 
+            order_bookstore_id=None
+        )
 
         # 效率優化: 移除 flush
 
@@ -333,13 +348,20 @@ async def seed_data():
         print(f"成功創建的員工帳號: {STAFF_ACCOUNT}")
 
 
-if __name__ == "__main__":
+async def main():
+    """主執行函式，處理連線池關閉與錯誤。"""
     try:
         # Pydantic Settings 在這裡會載入 .env 檔案
         print(f"使用的資料庫 URI: {settings.DATABASE_URI}")
         print("請確保您的資料庫已啟動且表格已初始化（例如：運行 Alembic 遷移）後再執行此腳本。")
-        asyncio.run(seed_data())
+        await seed_data()
     except Exception as e:
         print(f"資料填充過程中發生錯誤: {e}")
-        # 錯誤時釋放連線池
-        asyncio.run(engine.dispose())
+    finally:
+        # 確保在同一個 event loop 中關閉 engine
+        await engine.dispose()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    
