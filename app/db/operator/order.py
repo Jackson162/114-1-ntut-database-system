@@ -29,7 +29,7 @@ async def get_orders_by_customer_account(db: AsyncSession, customer_account: str
 
 async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
 
-    query = (
+    order_ids_cte = (
         select(OrderItem.order_id)
         .join(
             BookBookstoreMapping,
@@ -37,10 +37,7 @@ async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
         )
         .where(BookBookstoreMapping.bookstore_id == bookstore_id)
         .group_by(OrderItem.order_id)
-    )
-
-    result = await db.execute(query)
-    order_ids = list(result.scalars().all())
+    ).cte()
 
     options = (
         # 1. Order.order_items (TO-MANY collection) -> CORRECT: selectinload
@@ -55,7 +52,7 @@ async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
         )
     )
 
-    query = select(Order).where(Order.order_id.in_(order_ids)).options(options)
+    query = select(Order).where(Order.order_id.in_(select(order_ids_cte))).options(options)
 
     result = await db.execute(query)
     return list(result.scalars().all())

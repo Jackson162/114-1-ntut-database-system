@@ -10,9 +10,16 @@ from app.enum.order import OrderStatus
 from app.db.models.staff import Staff
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.db.operator.order import get_orders_by_bookstore_id
+from app.db.operator.book import list_books_by_bookstore_id
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
-from app.router.schema.sqlachemy import BookstoreSchema, OrderSchema, OrderItemSchema, BookSchema
+from app.router.schema.sqlachemy import (
+    BookstoreSchema,
+    OrderSchema,
+    OrderItemSchema,
+    BookSchema,
+    BookWithMappingInfo,
+)
 from app.logging.logger import get_logger
 
 logger = get_logger()
@@ -65,7 +72,7 @@ async def get_staff_orders(
     login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
     db: AsyncSession = Depends(get_db_session),
 ):
-    token_payload, staff = login_data
+    _, staff = login_data
     list_order_error = None
     try:
         orders = await get_orders_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
@@ -103,4 +110,35 @@ async def get_staff_orders(
 
     return templates.TemplateResponse(
         "/staff/orders.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/books")
+async def get_staff_books(
+    request: Request,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+    list_book_error = None
+
+    try:
+        books = await list_books_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
+        book_dicts = [BookWithMappingInfo.from_orm(book).dict() for book in books]
+
+    except NoResultFound:
+        book_dicts = []
+    except Exception as err:
+        book_dicts = []
+        list_book_error = repr(err)
+
+    context = {
+        "request": request,
+        "staff": staff,
+        "books": book_dicts,
+        "list_book_error": list_book_error,
+    }
+
+    return templates.TemplateResponse(
+        "/staff/books.jinja", context=context, status_code=status.HTTP_200_OK
     )
