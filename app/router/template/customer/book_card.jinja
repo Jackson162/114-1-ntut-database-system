@@ -3,7 +3,7 @@
     
     {# 封面圖 (點擊跳轉至 /book/:book_id) #}
     <a href="/book/{{ book.book_id }}">
-        <img src="{{ book.image_url }}" alt="{{ book.title }}">
+        <img src="{{ url_for('static', path='/book.png') }}" alt="{{ book.title }}">
     </a>
     
     {# 書名 (點擊跳轉至 /book/:book_id) #}
