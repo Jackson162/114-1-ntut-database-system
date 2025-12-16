@@ -17,8 +17,8 @@ from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchem
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from app.util.auth import decode_jwt
-from app.db.operator.cart import get_cart_item_count
-from app.db.operator.book import get_all_categories, get_new_arrivals
+from app.db.operator.cart import get_cart_item_count,get_cart_item
+from app.db.operator.book import get_all_categories, get_new_arrivals,get_book_display_data
 
 
 router = APIRouter()
@@ -83,98 +83,76 @@ async def checkout_page(request: Request, checkout_error: Optional[str] = None):
     )
 
 @router.get("/books")
-async def search_books_page(
-    request: Request,
-    q: Optional[str] = None,
-    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
-    db: AsyncSession = Depends(get_db_session),
-):
-    token_payload, customer = login_data
-    
-    # Fetch cart count for the navbar
-    cart_count = 0
-    try:
-        cart_count = await get_cart_item_count(db, customer.account)
-    except:
-        pass
-
-    # Search logic
+async def search_books_redirect(q: Optional[str] = None):
+    from fastapi.responses import RedirectResponse
+    url = "/frontend/customers/home"
     if q:
-        books = await search_books(db, q)
-    else:
-        books = await get_all_books(db)
-
-    # Format books for the template
-    books_data = []
-    for b in books:
-        # Note: In a real scenario, we would join with BookBookstoreMapping to get the actual min_price
-        books_data.append({
-            "book_id": b.book_id,
-            "title": b.title,
-            "author": b.author,
-            "image_url": "https://placehold.co/180x120", # Placeholder image
-            "min_price": "N/A" # Placeholder price
-        })
-
-    context = {
-        "request": request,
-        "books": books_data,
-        "q": q or "",
-        "cart_count": cart_count,
-        "customer": customer
-    }
-
-    return templates.TemplateResponse(
-        "/customer/books.jinja", context=context, status_code=status.HTTP_200_OK
-    )
+        url += f"?q={q}"
+    return RedirectResponse(url=url)
 
 @router.get("/home")
 async def customer_homepage(
     request: Request,
+    q: Optional[str] = None, # 新增搜尋參數
     db: AsyncSession = Depends(get_db_session),
 ):
     token = request.cookies.get("auth_token")
-    payload = decode_jwt(token)
-    customer_account = payload.account
-
-    print (1233)
+    customer_account = None
+    if token: 
+        try:
+            payload = decode_jwt(token)
+            customer_account = payload.account
+        except:
+            pass
 
     cart_count = 0
-    try:
-        cart_count = await get_cart_item_count(db, customer.account)
-    except:
-        pass
-    categories = 0
-    try:
-        categories = await get_all_categories(db)
-    except:
-        pass
-    
-    new_books = 0
-    try:
-        new_books = await get_all_books(db)
-    except:
-        pass
-    
-    
-    
+    if customer_account:
+        try:
+            cart_count = await get_cart_item_count(db, customer_account)
+        except:
+            pass
+            
     context = {
-            "request": request,
-            "cart_count": cart_count,
+        "request": request,
+        "cart_count": cart_count,
+        "q": q or "",
+    }
+
+    if q:
+        books = await search_books(db, q)
+        
+        books_data = []
+        for b in books:
+            books_data.append(await get_book_display_data(db, b))
+            
+        context.update({
+            "is_search_mode": True,
+            "books": books_data,
+        })
+    else:
+        categories = []
+        try:
+            categories = await get_all_categories(db)
+        except:
+            pass
+        
+        new_books = []
+        try:
+            new_books = await get_new_arrivals(db)
+        except:
+            pass
+        
+        new_arrivals_data = []
+        for b in new_books:
+            new_arrivals_data.append(await get_book_display_data(db, b))
+        
+        context.update({
+            "is_search_mode": False,
             "categories": categories,
-            "new_arrivals": [
-                {
-                    "book_id": b.book_id,
-                    "title": b.title,
-                    "author": b.author,
-                    "image_url": "https://placehold.co/180x120",
-                    "min_price": None,
-                }
-                for b in new_books
-            ],
-            "bestsellers": [],
-            "promotions": [],
-        }
+            "new_arrivals": new_arrivals_data,
+            "bestsellers": [], 
+            "promotions": [],  
+        })
     
     return templates.TemplateResponse(
         "customer/home.jinja", context=context, status_code=status.HTTP_200_OK

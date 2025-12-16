@@ -62,3 +62,22 @@ async def search_books(db: AsyncSession, keyword: str):
     result = await db.execute(stmt)
     return result.scalars().all()
     
+async def get_book_display_data(db: AsyncSession, book):
+    # 查詢該書的 mapping，依價格低到高排序，取第一筆 (最低價)
+    stmt = (
+        select(BookBookstoreMapping)
+        .where(BookBookstoreMapping.book_id == book.book_id)
+        .order_by(BookBookstoreMapping.price.asc())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    mapping = result.scalars().first()
+    
+    return {
+        "book_id": book.book_id,
+        "title": book.title,
+        "author": book.author,
+        "image_url": "https://placehold.co/180x120", # Placeholder image
+        "min_price": mapping.price if mapping else "N/A",
+        "bookstore_id": mapping.bookstore_id if mapping else None # 關鍵：加入 bookstore_id
+    }
