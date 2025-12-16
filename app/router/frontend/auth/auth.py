@@ -3,7 +3,6 @@ from fastapi import APIRouter, status, Request
 from fastapi.responses import HTMLResponse
 
 from app.router.template.index import templates
-from app.enum.user import UserRole
 
 router = APIRouter()
 
@@ -16,7 +15,6 @@ async def login_page(
     context = {
         "request": request,
         "register_succeeded": register_succeeded,
-        "roles": [role.value for role in UserRole],
     }
     return templates.TemplateResponse(
         "/auth/login.jinja", context=context, status_code=status.HTTP_200_OK
@@ -47,6 +45,18 @@ async def user_login_succeeded_page(
     }
     return templates.TemplateResponse(
         "/test/user_login.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/staff_login_succeeded", response_class=HTMLResponse)
+async def staff_login_succeeded_page(
+    request: Request,
+) -> HTMLResponse:
+    context = {
+        "request": request,
+    }
+    return templates.TemplateResponse(
+        "/test/staff_login.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
 

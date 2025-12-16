@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Books</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 60px; 
+            background-color: #f4f7f6;
+            min-height: 100vh;
+        }
+
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .logo-home {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        /* Modified Search Container Styles */
+        .search-container {
+            width: 40%;
+            display: flex;
+            align-items: stretch; /* Ensure all children have same height */
+        }
+        .search-bar {
+            flex-grow: 1;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-right: none; /* Merge visually with next element */
+            border-radius: 20px 0 0 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        /* Clear Button Styles */
+        .clear-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            color: #999;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .clear-btn:hover {
+            color: #555;
+            background-color: #f9f9f9;
+        }
+
+        .search-btn {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-left: none; /* Merge visually */
+            border-radius: 0 20px 20px 0;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        /* Fix border radius if clear button is NOT present (handled via CSS sibling selector or inline logic if needed, 
+           but easiest is to keep structure consistent or rely on flex behavior) */
+        
+        .nav-icons a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            position: relative;
+        }
+        .nav-icons span { 
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            line-height: 1;
+        }
+        
+        .content-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .section-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            padding-bottom: 15px;
+        }
+        .no-results {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-bar">
+        <a href="/home" class="logo-home">Bookstore</a>
+        
+        <form class="search-container" action="/frontend/customers/search" method="get">
+            <input type="text" name="q" class="search-bar" placeholder="Search books..." value="{{ q }}">
+            
+            {% if q %}
+                <a href="/frontend/customers/search" class="clear-btn" title="Clear Search">✕</a>
+            {% endif %}
+            
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+        
+        <div class="nav-icons">
+            <a href="/customers/cart">
+                購物車
+                <span>{{ cart_count or 0 }}</span>
+            </a>
+            <a href="/frontend/customers/orders">訂單</a>
+            <a href="/customers/profile">個人頁面</a>
+        </div>
+    </div>
+
+    <div class="content-container">
+        
+        <h2 class="section-title">
+            {% if q %}
+                Search Results for "{{ q }}"
+            {% else %}
+                All Books
+            {% endif %}
+        </h2>
+
+        {% if books %}
+            <div class="books-grid">
+                {% for book in books %}
+                    {% include 'customer/book_card.jinja' %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-results">
+                No books found.
+            </div>
+        {% endif %}
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    // Alert logic placeholder
+                    alert('Add to cart functionality requires selecting a specific bookstore/price mapping.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

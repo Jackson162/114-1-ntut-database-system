@@ -1,74 +1,36 @@
-from uuid import UUID
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
-from typing import List, Optional
-from sqlalchemy import  or_
-from sqlalchemy.orm import selectinload, joinedload
-
-from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 from app.db.models.book import Book
 
 
-async def list_books_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
-    query = (
-        select(
-            Book.book_id,
-            Book.title,
-            Book.author,
-            Book.publisher,
-            Book.isbn,
-            Book.category,
-            Book.publish_date,
-            BookBookstoreMapping.price,
-            BookBookstoreMapping.store_quantity,
-            BookBookstoreMapping.book_bookstore_mapping_id,
-            BookBookstoreMapping.bookstore_id,
-        )
-        .join(BookBookstoreMapping, BookBookstoreMapping.book_id == Book.book_id)
-        .where(BookBookstoreMapping.bookstore_id == bookstore_id)
+async def get_all_categories(db: AsyncSession):
+    stmt = select(Book.category).distinct()
+    result = await db.execute(stmt)
+    return [row[0] for row in result.all() if row[0]]
+
+
+async def get_new_arrivals(db: AsyncSession, limit: int = 5):
+    stmt = (
+        select(Book)
+        .order_by(Book.publish_date.desc())
+        .limit(limit)
     )
-
-    result = await db.execute(query)
-    return list(result.all())
-
-
-async def get_books(
-    db: AsyncSession,
-    keyword: Optional[str] = None,
-    category: Optional[str] = None,
-) -> List[Book]:
-    """
-    Search books by keyword (title or author) or category.
-    """
-    query = select(Book)
-
-    if keyword:
-        # Simple fuzzy search on title or author
-        kw = f"%{keyword}%"
-        query = query.where(or_(Book.title.ilike(kw), Book.author.ilike(kw)))
-
-    if category:
-        query = query.where(Book.category == category)
-    
-    # Order by title by default
-    query = query.order_by(Book.title)
-
-    result = await db.execute(query)
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 
-async def get_book_with_details(db: AsyncSession, book_id: UUID) -> Optional[Book]:
-    """
-    Get a single book with all its bookstore mappings (prices and stock).
-    """
-    query = (
-        select(Book)
-        .where(Book.book_id == book_id)
-        .options(
-            selectinload(Book.book_bookstore_mapping).joinedload(BookBookstoreMapping.bookstore)
+async def get_all_books(db: AsyncSession):
+    stmt = select(Book)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+async def search_books(db: AsyncSession, keyword: str):
+    stmt = select(Book).where(
+        or_(
+            Book.title.ilike(f"%{keyword}%"),
+            Book.author.ilike(f"%{keyword}%")
         )
     )
-    
-    result = await db.execute(query)
-    return result.scalars().one_or_none()
+    result = await db.execute(stmt)
+    return result.scalars().all()

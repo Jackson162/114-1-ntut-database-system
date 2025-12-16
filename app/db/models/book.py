@@ -34,6 +34,6 @@ class Book(Base):
     publish_date: Mapped[Optional[date]] = mapped_column(Date)
 
     # Relationships
-    book_bookstore_mapping: Mapped[List["BookBookstoreMapping"]] = relationship(
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
         back_populates="book"
     )

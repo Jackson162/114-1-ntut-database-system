@@ -1,0 +1,24 @@
+{# template/customer/book_card.jinja #}
+<div class="book-card">
+    
+    {# 封面圖 (點擊跳轉至 /book/:book_id) #}
+    <a href="/book/{{ book.book_id }}">
+        <img src="{{ book.image_url }}" alt="{{ book.title }}">
+    </a>
+    
+    {# 書名 (點擊跳轉至 /book/:book_id) #}
+    <a href="/book/{{ book.book_id }}" class="book-title">{{ book.title }}</a>
+    
+    {# 作者 #}
+    <span class="book-author">{{ book.author }}</span>
+    
+    {# 價格 #}
+    <div class="book-price">NT$ {{ book.min_price }}</div>
+    
+    {# 加入購物車按鈕 (需要 JavaScript 處理) #}
+    <button class="add-to-cart-btn" 
+        data-book-id="{{ book.book_id }}"
+        data-min-price="{{ book.min_price }}">
+        加入購物車
+    </button>
+</div>

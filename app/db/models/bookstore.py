@@ -33,7 +33,7 @@ class Bookstore(Base):
 
     # Relationships
     staffs: Mapped[List["Staff"]] = relationship(back_populates="bookstore")
-    book_bookstore_mapping: Mapped[List["BookBookstoreMapping"]] = relationship(
+    book_bookstore_mapping: Mapped["BookBookstoreMapping"] = relationship(
         back_populates="bookstore"
     )
 
