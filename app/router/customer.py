@@ -1,7 +1,3 @@
-from pathlib import Path
-from app.db.operator.cart import get_cart_item_count
-from app.db.operator.book import get_all_categories, get_new_arrivals
-from app.util.auth import decode_jwt
 from typing import Tuple, Annotated, Dict, List
 from datetime import datetime
 from fastapi import APIRouter, Depends, Request, status, Form
@@ -251,44 +247,3 @@ async def create_customer_order(
             url=f"/frontend/customers/checkout?checkout_error={repr(err)}",
             status_code=status.HTTP_303_SEE_OTHER,
         )
-        
-ROUTER_DIR = Path(__file__).resolve().parent
-TEMPLATE_DIR = ROUTER_DIR / "template"
-
-templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
-
-@router.get("/home")
-async def customer_homepage(
-    request: Request,
-    db: AsyncSession = Depends(get_db_session),
-):
-    token = request.cookies.get("auth_token")
-    payload = decode_jwt(token)
-    customer_account = payload.account
-
-
-    cart_count = await get_cart_item_count(db, customer_account)
-    categories = await get_all_categories(db)
-    new_books = await get_new_arrivals(db)
-
-    return templates.TemplateResponse(
-        "customer/home.jinja",
-        {
-            "request": request,
-            "cart_count": cart_count,
-            "categories": categories,
-            "new_arrivals": [
-                {
-                    "book_id": b.book_id,
-                    "title": b.title,
-                    "author": b.author,
-                    "image_url": "https://placehold.co/180x120",
-                    "min_price": None,
-                }
-                for b in new_books
-            ],
-            "bestsellers": [],
-            "promotions": [],
-        },
-    )
-
