@@ -1,4 +1,5 @@
 from typing import Tuple, Annotated, Dict, List
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request, status, Form
 from uuid import UUID
@@ -10,10 +11,10 @@ from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.db.models.customer import Customer
 from app.db.models.cart_item import CartItem
+from app.db.models.order import Order
 
-from app.db.operator.order import create_order, create_order_item
 from app.util.auth import JwtPayload
-
+from app.db.operator.order import create_order, create_order_item
 from app.db.operator.bookbookstoremapping import get_book_mapping, decrease_stock
 from app.db.operator.shopping_cart import (
     get_cart_by_account,
@@ -23,7 +24,12 @@ from app.db.operator.shopping_cart import (
     create_cart_item,
     clear_cart_items,
 )
+from app.db.operator.coupon import get_coupon_by_id
+from app.enum.order import OrderStatus
+from app.util.coupon import apply_coupon
+from app.logging.logger import get_logger
 
+logger = get_logger()
 
 router = APIRouter()
 
@@ -76,7 +82,7 @@ async def add_to_cart(
 async def create_customer_order(
     request: Request,
     recipient_name: Annotated[str, Form()],
-    recipient_address: Annotated[str, Form()],
+    coupon_id: Annotated[UUID, Form()],
     login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -86,6 +92,24 @@ async def create_customer_order(
         cart = await get_cart_by_account(db, customer.account)
         if not cart or not cart.cart_items:
             raise Exception("Cart is empty")
+
+        coupon = await get_coupon_by_id(db=db, coupon_id=coupon_id)
+
+        if not coupon:
+            raise Exception(f"Coupon with id: {coupon_id} does not exist!")
+
+        cur_time = datetime.now().date()
+        if cur_time < coupon.start_date:
+            err_msg = f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is inactive."
+            logger.error(err_msg)
+            raise Exception(err_msg)
+
+        if coupon.end_date and cur_time >= coupon.end_date:
+            err_msg = f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is expired."
+            logger.error(err_msg)
+            raise Exception(err_msg)
+
+        coupon_bookstore_id = coupon.staff.bookstore_id if coupon.staff else None
 
         bookstore_id_to_cart_items: Dict[UUID, List[CartItem]] = {}
 
@@ -130,25 +154,38 @@ async def create_customer_order(
                     }
                 )
 
-            # 4. 寫入訂單 (Create Order)
-            new_order = await create_order(
-                db=db,
-                account=customer.account,
+            order = Order(
+                customer_account=customer.account,
+                order_time=datetime.now().date(),
                 customer_name=customer.name,
-                customer_phone=customer.phone_number,
+                customer_phone_number=customer.phone,
                 customer_email=customer.email,
-                address=recipient_address,
+                shipping_address=bookstore.shipping_fee,
                 total_price=item_total_price + bookstore.shipping_fee,
                 shipping_fee=bookstore.shipping_fee,
                 recipient_name=recipient_name,
+                status=OrderStatus.DELIVERING,
             )
+
+            try:
+                order = apply_coupon(
+                    coupon=coupon,
+                    order=order,
+                    coupon_bookstore_id=coupon_bookstore_id,
+                    order_bookstore_id=bookstore.bookstore_id,
+                )
+            except Exception:
+                pass
+
+            # 4. 寫入訂單 (Create Order)
+            order = await create_order(db=db, order=order)
 
             # 5. 寫入細項 (Order Items) & 扣庫存
             for data in order_items_data:
                 # 5.1 建立細項
                 await create_order_item(
                     db=db,
-                    order_id=new_order.order_id,
+                    order_id=order.order_id,
                     mapping_id=data["mapping_id"],
                     quantity=data["quantity"],
                     price=data["price"],

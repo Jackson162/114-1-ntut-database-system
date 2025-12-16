@@ -30,37 +30,12 @@ async def get_orders_by_customer_account(db: AsyncSession, customer_account: str
     return list(result.scalars().all())
 
 
-async def create_order(
-    db: AsyncSession,
-    account: str,
-    customer_name: str,
-    customer_phone: str,
-    address: str,
-    total_price: int,
-    shipping_fee: int,
-    recipient_name: str,
-    customer_email: str | None = None,
-) -> Order:
-    # 這裡 status 先預設為 "Pending" 或 "Processing"
-    stmt = (
-        insert(Order)
-        .values(
-            customer_account=account,
-            order_time=date.today(),
-            customer_name=customer_name,
-            customer_phone_number=customer_phone,
-            customer_email=customer_email,
-            shipping_address=address,
-            total_price=total_price,
-            shipping_fee=shipping_fee,
-            recipient_name=recipient_name,
-            status=OrderStatus.DELIVERING,
-        )
-        .returning(Order)
-    )
+async def create_order(db: AsyncSession, order: Order) -> Order:
+    db.add(order)
 
-    result = await db.execute(stmt)
-    return result.scalars().one()
+    await db.flush()
+
+    return order
 
 
 async def create_order_item(
