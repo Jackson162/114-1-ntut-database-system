@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload, joinedload
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
+from app.enum.order import OrderStatus
 
 
 async def get_orders_by_customer_account(db: AsyncSession, customer_account: str):

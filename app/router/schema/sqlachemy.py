@@ -11,7 +11,9 @@ class BookSchema(BaseModel):
     author: str
     publisher: str
     isbn: str
-    publish_date: Optional[date] = None
+    category: str
+    series: Optional[str] = None
+    publish_date: date
 
     class Config:
         orm_mode = True
@@ -23,22 +25,6 @@ class BookBookstoreMappingSchema(BaseModel):
     store_quantity: int
     book_id: UUID
     bookstore_id: UUID
-
-    class Config:
-        orm_mode = True
-
-
-class BookWithMappingInfo(BaseModel):
-    book_bookstore_mapping_id: UUID
-    price: int
-    store_quantity: int
-    bookstore_id: UUID
-    book_id: UUID
-    title: str
-    author: str
-    publisher: str
-    isbn: str
-    publish_date: Optional[date] = None
 
     class Config:
         orm_mode = True
