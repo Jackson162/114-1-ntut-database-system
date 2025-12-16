@@ -17,7 +17,7 @@ from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchem
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from app.util.auth import decode_jwt
-from app.db.operator.cart import get_cart_item_count,get_cart_item
+from app.db.operator.cart import get_cart_item_count, get_cart_details
 from app.db.operator.book import get_all_categories, get_new_arrivals,get_book_display_data
 
 
@@ -158,4 +158,53 @@ async def customer_homepage(
         "customer/home.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
+ 
+@router.get("/cart")
+async def view_cart(
+    request: Request,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_payload, customer = login_data
+    
+    rows = await get_cart_details(db, customer.account)
 
+    cart_items_data = []
+    total_price = 0
+    total_items = 0
+    
+    for row in rows:
+        
+        quantity = row[1]
+        price = row[8]
+        subtotal = price * quantity
+        total_price += subtotal
+        total_items += quantity
+        
+        cart_items_data.append({
+            "cart_item_id": row[0],
+            "quantity": quantity,
+            "book_id": row[2],
+            "title": row[3],
+            "author": row[4],
+            "image_url": row[5],
+            "bookstore_id": row[6],
+            "bookstore_name": row[7],
+            "price": price,
+            "stock": row[9],
+            "subtotal": subtotal
+        })
+
+    context = {
+        "request": request,
+        "cart_items": cart_items_data,
+        "total_price": total_price,
+        "total_items": total_items,
+        "cart_count": total_items,
+        "customer": customer
+    }
+
+    return templates.TemplateResponse(
+        "/customer/cart.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+   
