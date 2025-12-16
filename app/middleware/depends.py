@@ -20,7 +20,11 @@ def validate_token_by_role(authorized_role: str):
         db: AsyncSession = Depends(get_db_session),
     ) -> Tuple[JwtPayload, Customer] | Tuple[JwtPayload, Staff] | Tuple[JwtPayload, Admin]:
         try:
-            token = request.cookies.get("auth_token") or ""
+            token = request.cookies.get("auth_token")
+
+            if not token:
+                raise Exception("No login token, please login first.")
+
             jwt_payload = decode_jwt(token)
 
             if jwt_payload.role != authorized_role:
@@ -33,9 +37,13 @@ def validate_token_by_role(authorized_role: str):
             elif jwt_payload.role == UserRole.STAFF:
                 user = await get_staff_by_account(db=db, account=jwt_payload.account)
             else:
+                raise Exception(f"Role: {jwt_payload.role} is not supported!")
+
+            if not user:
                 raise Exception(
                     f"Role: {jwt_payload.role} with account: {jwt_payload.account} does not exist"
                 )
+
             return jwt_payload, user
         except Exception as err:
             raise err

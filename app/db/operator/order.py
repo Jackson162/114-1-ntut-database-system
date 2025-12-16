@@ -1,11 +1,14 @@
+from uuid import UUID
+from datetime import date
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert
+from sqlalchemy import select, update, insert
 from sqlalchemy.orm import selectinload, joinedload
+
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
-from uuid import UUID
-from datetime import date
+from app.enum.order import OrderStatus
 
 
 async def get_orders_by_customer_account(db: AsyncSession, customer_account: str):
@@ -27,7 +30,6 @@ async def get_orders_by_customer_account(db: AsyncSession, customer_account: str
     return list(result.scalars().all())
 
 
-# 建立訂單
 async def create_order(
     db: AsyncSession,
     account: str,
@@ -61,7 +63,6 @@ async def create_order(
     return result.scalars().one()
 
 
-# 2. 訂單細項
 async def create_order_item(
     db: AsyncSession, order_id: UUID, mapping_id: UUID, quantity: int, price: int
 ):
@@ -69,3 +70,39 @@ async def create_order_item(
         order_id=order_id, book_bookstore_mapping_id=mapping_id, quantity=quantity, price=price
     )
     await db.execute(stmt)
+
+
+async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
+
+    order_ids_cte = (
+        select(OrderItem.order_id)
+        .join(
+            BookBookstoreMapping,
+            OrderItem.book_bookstore_mapping_id == BookBookstoreMapping.book_bookstore_mapping_id,
+        )
+        .where(BookBookstoreMapping.bookstore_id == bookstore_id)
+        .group_by(OrderItem.order_id)
+    ).cte()
+
+    options = (
+        # 1. Order.order_items (TO-MANY collection) -> CORRECT: selectinload
+        selectinload(Order.order_items).options(
+            # 2. OrderItem.book_bookstore_mapping (TO-ONE object) -> CORRECTED: joinedload
+            joinedload(OrderItem.book_bookstore_mapping).options(
+                # 3. BookBookstoreMapping.book (TO-ONE object) -> CORRECT: joinedload
+                joinedload(BookBookstoreMapping.book),
+                # 4. BookBookstoreMapping.bookstore (TO-ONE object) -> CORRECT: joinedload
+                joinedload(BookBookstoreMapping.bookstore),
+            )
+        )
+    )
+
+    query = select(Order).where(Order.order_id.in_(select(order_ids_cte))).options(options)
+
+    result = await db.execute(query)
+    return list(result.scalars().all())
+
+
+async def update_order(db: AsyncSession, order_id: UUID, order_status: OrderStatus):
+    query = update(Order).where(Order.order_id == order_id).values(status=order_status)
+    await db.execute(query)
