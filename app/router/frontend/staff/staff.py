@@ -13,7 +13,7 @@ from app.db.operator.order import get_orders_by_bookstore_id
 from app.db.operator.book import list_books_by_bookstore_id
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
-from app.router.schema.sqlachemy import (
+from app.router.schema.sqlalchemy import (
     BookstoreSchema,
     OrderSchema,
     OrderItemSchema,

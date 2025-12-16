@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+</head>
+<body>
+    <h1>填寫收件資訊</h1>
+
+    {% if checkout_error %}
+        <div class="error" style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 10px;">
+            <h3>Checkout Fails!!!</h3>
+            <p>Error: {{ checkout_error }}</p>
+        </div>
+    {% endif %}
+
+    <form method="post" action="/frontend/customers/orders/create">
+        
+        <label for="recipient_name">recipient_name:</label><br>
+        <input type="text" id="recipient_name" name="recipient_name" value="{{ recipient_name or '' }}" required><br><br>
+
+        <label for="recipient_address">recipient_address:</label><br>
+        <input type="text" id="recipient_address" name="recipient_address" value="{{ recipient_address or '' }}" required><br><br>
+
+        <input type="submit" value="Check Out">
+    </form>
+    
+    <br>
+    <a href="/frontend/customers/carts">Back To Cart</a>
+</body>
+</html>
