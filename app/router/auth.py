@@ -9,7 +9,7 @@ from app.enum.user import UserRole
 from app.db.operator.customer import create_customer, get_customer_by_account
 from app.db.operator.staff import create_staff, get_staff_by_account
 from app.db.operator.admin import get_admin_by_account
-from app.db.operator.cart import create_shopping_cart
+from app.db.operator.shopping_cart import create_cart
 from app.util.auth import hash_password, validate_password, generate_jwt
 from app.router.schema.auth import LoginData
 
@@ -40,7 +40,7 @@ async def register(
                 db=db,
             )
 
-            await create_shopping_cart(db=db, customer_account=account)
+            await create_cart(db=db, account=account)
         elif role == UserRole.STAFF.value:
             await create_staff(name=name, password=hashed_password, account=account, db=db)
 
@@ -66,7 +66,7 @@ async def login(
         try:
             if role == UserRole.CUSTOMER.value:
                 user = await get_customer_by_account(db=db, account=account)
-                next_page_path = "/frontend/auth/user_login_succeeded"
+                next_page_path = "/frontend/customers/books"
             elif role == UserRole.STAFF.value:
                 user = await get_staff_by_account(db=db, account=account)
                 next_page_path = "/frontend/staffs/bookstores"

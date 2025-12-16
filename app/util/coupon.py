@@ -17,22 +17,30 @@ def apply_coupon(
 ):
     if coupon.staff_account:
         if not coupon_bookstore_id or not order_bookstore_id:
-            raise Exception(
+            err_msg = (
                 "For bookstore-specific coupon, please provide"
-                " both coupon_bookstore_id and order_bookstore_id"
+                "both coupon_bookstore_id and order_bookstore_id"
             )
+            logger.error(err_msg)
+            raise Exception(err_msg)
         if str(coupon_bookstore_id) != str(order_bookstore_id):
-            raise Exception(
-                f"Coupon from bookstore(id={coupon_bookstore_id}) cannot be applied to"
-                f" the order of bookstore(id={order_bookstore_id})"
+            err_msg = (
+                "For bookstore-specific coupon, please provide"
+                "both coupon_bookstore_id and order_bookstore_id"
             )
+            logger.error(err_msg)
+            raise Exception(err_msg)
 
     cur_time = datetime.now().date()
     if cur_time < coupon.start_date:
-        raise Exception(f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is inactive.")
+        err_msg = f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is inactive."
+        logger.error(err_msg)
+        raise Exception(err_msg)
 
-    if coupon.end_date and cur_time > coupon.end_date:
-        raise Exception(f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is expired.")
+    if coupon.end_date and cur_time >= coupon.end_date:
+        err_msg = f"Coupon: name: {coupon.name}, id: {coupon.coupon_id} is expired."
+        logger.error(err_msg)
+        raise Exception(err_msg)
 
     items_total_price = order.total_price - order.shipping_fee
 
