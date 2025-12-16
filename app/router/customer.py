@@ -23,6 +23,8 @@ from app.db.operator.shopping_cart import (
     update_cart_item_quantity,
     create_cart_item,
     clear_cart_items,
+    delete_cart_item_by_item_id,
+    get_cart_item_by_item_id,
 )
 from app.db.operator.coupon import get_coupon_by_id
 from app.enum.order import OrderStatus
@@ -37,12 +39,12 @@ validate_customer_token = validate_token_by_role(UserRole.CUSTOMER)
 
 
 # shopping-cart api
-@router.post("/cart-items/create")
+@router.post("/cart-items/create_or_update")
 async def add_to_cart(
     request: Request,
     book_id: Annotated[UUID, Form()],
     bookstore_id: Annotated[UUID, Form()],
-    quantity: Annotated[int, Form()],
+    quantity: Annotated[int, Form()] = 1,
     login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -60,8 +62,10 @@ async def add_to_cart(
 
         existing_item = await get_cart_item(db, cart.cart_id, mapping.book_bookstore_mapping_id)
 
-        if existing_item:
+        if existing_item and quantity > 0:
             await update_cart_item_quantity(db, existing_item.cart_item_id, quantity)
+        elif existing_item and quantity <= 0:
+            await delete_cart_item_by_item_id(db=db, cart_item_id=existing_item.cart_item_id)
         else:
             await create_cart_item(db, cart.cart_id, mapping.book_bookstore_mapping_id, quantity)
 
@@ -74,6 +78,38 @@ async def add_to_cart(
         await db.rollback()
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": str(e)}
+        )
+
+
+@router.post("/cart-items/{cart_item_id}/delete")
+async def remove_from_cart(
+    request: Request,
+    cart_item_id: UUID,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_payload, customer = login_data
+
+    try:
+        cart = await get_cart_by_account(db, customer.account)
+
+        if not cart:
+            raise Exception("The Cart of this customer is not found")
+        existing_item = await get_cart_item_by_item_id(db=db, cart_item_id=cart_item_id)
+
+        if existing_item:
+            await delete_cart_item_by_item_id(db=db, cart_item_id=existing_item.cart_item_id)
+
+        await db.commit()
+        return RedirectResponse(
+            url="/frontend/customers/carts",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+    except Exception as err:
+        await db.rollback()
+        return RedirectResponse(
+            url=f"/frontend/customers/carts?remove_from_cart_error={repr(err)}",
+            status_code=status.HTTP_303_SEE_OTHER,
         )
 
 

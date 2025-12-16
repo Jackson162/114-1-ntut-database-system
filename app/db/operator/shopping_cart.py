@@ -50,6 +50,12 @@ async def get_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID) -> Op
     return result.scalars().first()
 
 
+async def get_cart_item_by_item_id(db: AsyncSession, cart_item_id: UUID):
+    stmt = select(CartItem).where(CartItem.cart_item_id == cart_item_id)
+    result = await db.execute(stmt)
+    return result.scalars().first()
+
+
 # 數量更新
 async def update_cart_item_quantity(db: AsyncSession, cart_item_id: UUID, quantity: int):
     stmt = update(CartItem).where(CartItem.cart_item_id == cart_item_id).values(quantity=quantity)
@@ -68,3 +74,8 @@ async def create_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID, qu
 async def clear_cart_items(db: AsyncSession, cart_id: UUID):
     stmt = delete(CartItem).where(CartItem.cart_id == cart_id)
     await db.execute(stmt)
+
+
+async def delete_cart_item_by_item_id(db: AsyncSession, cart_item_id: UUID):
+    query = delete(CartItem).where(CartItem.cart_item_id == cart_item_id)
+    await db.execute(query)
