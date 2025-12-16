@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import PlainTextResponse
 from starlette import status
 from app.core.config import settings
 from app.db.init_db import init_db
 from app.router import auth, staff, customer
 from app.router.frontend import frontend
-from fastapi.staticfiles import StaticFiles
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,8 +21,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 app.include_router(frontend.router, prefix="/frontend", tags=["frontend"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(staff.router, prefix="/staffs", tags=["staffs"])

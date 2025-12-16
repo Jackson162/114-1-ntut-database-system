@@ -80,5 +80,3 @@ async def get_orders_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
 async def update_order(db: AsyncSession, order_id: UUID, order_status: OrderStatus):
     query = update(Order).where(Order.order_id == order_id).values(status=order_status)
     await db.execute(query)
-
-

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from sqlalchemy import Date, ForeignKey, Integer, Text, text, CHAR, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.enum.order import OrderStatus
 
 from app.db.models.base import Base
 
@@ -31,7 +32,7 @@ class Order(Base):
     customer_name: Mapped[str] = mapped_column(Text, nullable=False)
     customer_phone_number: Mapped[str] = mapped_column(CHAR(10), nullable=False)
     customer_email: Mapped[Optional[str]] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(Text, nullable=False)
     total_price: Mapped[int] = mapped_column(Integer, nullable=False)
     shipping_address: Mapped[str] = mapped_column(Text, nullable=False)
     shipping_fee: Mapped[int] = mapped_column(Integer, nullable=False)
