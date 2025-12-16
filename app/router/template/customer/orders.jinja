@@ -34,6 +34,14 @@
             </div>
         {% endif %}
 
+        {% if checkout_succeed %}
+            <div class="checkout_succeeds">
+                <p>Checkout Succeeds! We will process your order ASAP.</p>
+            </div>
+        {% endif %}
+
+        
+
         {% if orders %}
             {% for order in orders %}
                 <div class="order">

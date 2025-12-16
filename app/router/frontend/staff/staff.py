@@ -10,7 +10,13 @@ from app.db.models.customer import Customer
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
-from app.router.schema.sqlachemy import BookstoreSchema
+from app.router.schema.sqlalchemy import (
+    BookstoreSchema,
+    OrderSchema,
+    OrderItemSchema,
+    BookSchema,
+    BookWithMappingInfo,
+)
 from app.logging.logger import get_logger
 
 logger = get_logger()
