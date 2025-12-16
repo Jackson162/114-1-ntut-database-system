@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 from fastapi import APIRouter, Depends, Request, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +23,7 @@ validate_customer_token = validate_token_by_role(UserRole.CUSTOMER)
 @router.get("/orders")
 async def get_customer_orders(
     request: Request,
+    checkout_succeeds: bool = False,
     login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -58,6 +59,7 @@ async def get_customer_orders(
         "customer": customer,
         "orders": order_dicts,
         "list_order_error": list_order_error,
+        "checkout_succeeds": checkout_succeeds,
     }
 
     return templates.TemplateResponse(
@@ -67,11 +69,9 @@ async def get_customer_orders(
 
 # 結帳畫面
 @router.get("/checkout")
-async def checkout_page(request: Request):
-    return templates.TemplateResponse("/customer/checkout.jinja", context={"request": request})
+async def checkout_page(request: Request, checkout_error: Optional[str] = None):
+    context = {"request": request, "checkout_error": checkout_error}
 
-
-# 訂單成功頁面
-@router.get("/orders/success")
-async def order_success_page(request: Request):
-    return templates.TemplateResponse("/customer/order_success.jinja", context={"request": request})
+    return templates.TemplateResponse(
+        "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
+    )

@@ -54,7 +54,7 @@ async def create_order(
             total_price=total_price,
             shipping_fee=shipping_fee,
             recipient_name=recipient_name,
-            status="pending",
+            status=OrderStatus.DELIVERING,
         )
         .returning(Order)
     )

@@ -5,7 +5,7 @@ from fastapi.responses import PlainTextResponse
 from starlette import status
 from app.core.config import settings
 from app.db.init_db import init_db
-from app.router import auth, staff
+from app.router import auth, staff, customer
 from app.router.frontend import frontend
 
 

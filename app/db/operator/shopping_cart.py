@@ -24,7 +24,8 @@ async def get_cart_by_account(db: AsyncSession, account: str) -> Optional[Shoppi
         .options(
             selectinload(ShoppingCart.cart_items).options(
                 selectinload(CartItem.book_bookstore_mapping).options(
-                    selectinload(BookBookstoreMapping.book)
+                    selectinload(BookBookstoreMapping.bookstore),
+                    selectinload(BookBookstoreMapping.book),
                 )
             )
         )
