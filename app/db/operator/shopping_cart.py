@@ -40,20 +40,6 @@ async def create_cart(db: AsyncSession, account: str) -> ShoppingCart:
     return result.scalars().one()
 
 
-# mapping
-async def get_book_mapping(
-    db: AsyncSession, book_id: UUID, bookstore_id: UUID
-) -> Optional[BookBookstoreMapping]:
-    stmt = select(BookBookstoreMapping).where(
-        and_(
-            BookBookstoreMapping.book_id == book_id,
-            BookBookstoreMapping.bookstore_id == bookstore_id,
-        )
-    )
-    result = await db.execute(stmt)
-    return result.scalars().first()
-
-
 # 取得cart的商品
 async def get_cart_item(db: AsyncSession, cart_id: UUID, mapping_id: UUID) -> Optional[CartItem]:
     stmt = select(CartItem).where(

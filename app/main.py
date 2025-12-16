@@ -26,6 +26,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(frontend.router, prefix="/frontend", tags=["frontend"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(staff.router, prefix="/staffs", tags=["staffs"])
+app.include_router(customer.router, prefix="/customers", tags=["customers"])
 
 
 @app.exception_handler(Exception)
