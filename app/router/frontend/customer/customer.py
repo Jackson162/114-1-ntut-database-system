@@ -25,7 +25,7 @@ from app.db.operator.shopping_cart import (
     clear_cart_items,
 )
 
-from app.router.schema.sqlachemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
+from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
 
 
 router = APIRouter()
