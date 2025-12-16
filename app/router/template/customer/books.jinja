@@ -133,23 +133,25 @@
     <div class="sticky-bar">
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
         
-        <form class="search-container" action="/frontend/customers/search" method="get">
-            <input type="text" name="q" class="search-bar" placeholder="Search books..." value="{{ q }}">
+        <form class="search-container" action="/frontend/customers/books" method="get">
+            <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
             
             {% if q %}
-                <a href="/frontend/customers/search" class="clear-btn" title="Clear Search">✕</a>
+                <a href="/frontend/customers/books" class="clear-btn" title="Clear Search">✕</a>
             {% endif %}
             
             <button type="submit" class="search-btn">Search</button>
         </form>
         
         <div class="nav-icons">
-            <a href="/customers/cart">
+            <a href="/frontend/customers/cart">
                 購物車
                 <span>{{ cart_count or 0 }}</span>
             </a>
+            {# 訂單入口 (跳轉至 /customers/orders) #}
             <a href="/frontend/customers/orders">訂單</a>
-            <a href="/customers/profile">個人頁面</a>
+            {# 個人頁面 (跳轉至 /customers/profile) #}
+            <a href="/frontend/customers/profile">個人頁面</a>
         </div>
     </div>
 

@@ -1,5 +1,3 @@
-from sqlmodel import Session
-from app.middleware.db_session import get_db_session
 from pathlib import Path
 from app.db.operator.cart import get_cart_item_count
 from app.db.operator.book import get_all_categories, get_new_arrivals
@@ -262,7 +260,7 @@ templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 @router.get("/home")
 async def customer_homepage(
     request: Request,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     token = request.cookies.get("auth_token")
     payload = decode_jwt(token)

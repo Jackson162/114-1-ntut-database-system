@@ -14,6 +14,11 @@ from app.util.auth import JwtPayload
 from app.router.template.index import templates
 
 from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
+from app.util.auth import decode_jwt
+from app.db.operator.cart import get_cart_item_count
+from app.db.operator.book import get_all_categories, get_new_arrivals
 
 
 router = APIRouter()
@@ -122,4 +127,57 @@ async def search_books_page(
     return templates.TemplateResponse(
         "/customer/books.jinja", context=context, status_code=status.HTTP_200_OK
     )
+
+@router.get("/home")
+async def customer_homepage(
+    request: Request,
+    db: AsyncSession = Depends(get_db_session),
+):
+    token = request.cookies.get("auth_token")
+    payload = decode_jwt(token)
+    customer_account = payload.account
+
+    print (1233)
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except:
+        pass
+    categories = 0
+    try:
+        categories = await get_all_categories(db)
+    except:
+        pass
     
+    new_books = 0
+    try:
+        new_books = await get_all_books(db)
+    except:
+        pass
+    
+    
+    
+    context = {
+            "request": request,
+            "cart_count": cart_count,
+            "categories": categories,
+            "new_arrivals": [
+                {
+                    "book_id": b.book_id,
+                    "title": b.title,
+                    "author": b.author,
+                    "image_url": "https://placehold.co/180x120",
+                    "min_price": None,
+                }
+                for b in new_books
+            ],
+            "bestsellers": [],
+            "promotions": [],
+        }
+    
+    return templates.TemplateResponse(
+        "customer/home.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
