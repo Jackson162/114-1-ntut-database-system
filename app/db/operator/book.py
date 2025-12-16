@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
+from sqlalchemy import select, func, or_
 
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 from app.db.models.book import Book
@@ -28,3 +28,36 @@ async def list_books_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
 
     result = await db.execute(query)
     return list(result.all())
+
+async def get_all_categories(db: AsyncSession):
+    stmt = select(Book.category).distinct()
+    result = await db.execute(stmt)
+    return [row[0] for row in result.all() if row[0]]
+
+
+async def get_new_arrivals(db: AsyncSession, limit: int = 5):
+    stmt = (
+        select(Book)
+        .order_by(Book.publish_date.desc())
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+async def get_all_books(db: AsyncSession):
+    stmt = select(Book)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+async def search_books(db: AsyncSession, keyword: str):
+    stmt = select(Book).where(
+        or_(
+            Book.title.ilike(f"%{keyword}%"),
+            Book.author.ilike(f"%{keyword}%")
+        )
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+    

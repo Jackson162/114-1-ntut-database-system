@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookstore Customer Homepage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 60px; 
+            background-color: #f4f7f6;
+            min-height: 100vh;
+        }
+
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .logo-home {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .search-bar {
+            width: 40%;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .nav-icons a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            position: relative;
+        }
+        .nav-icons span { 
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            line-height: 1;
+        }
+        
+        .content-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .section-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        .books-scroll-wrapper {
+            display: flex;
+            overflow-x: auto; 
+            gap: 20px;
+            padding-bottom: 15px;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .books-scroll-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera*/
+        }
+
+        .book-card {
+            flex: 0 0 180px; 
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .book-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .book-card img {
+            width: 100%;
+            height: 120px; 
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .book-title, .book-author {
+            text-decoration: none;
+            display: block;
+        }
+        .book-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0056b3;
+            height: 35px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .book-author {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .book-price {
+            font-size: 16px;
+            color: #d9534f;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .add-to-cart-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 8px 0;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-bar">
+        <a href="/home" class="logo-home">Bookstore</a>
+        
+        <input type="text" class="search-bar" placeholder="全站搜尋...">
+        
+        <div class="nav-icons">
+            <a href="/customers/cart">
+                購物車
+                <span>{{ cart_count or 0 }}</span>
+            </a>
+            {# 訂單入口 (跳轉至 /customers/orders) #}
+            <a href="/customers/orders">訂單</a>
+            {# 個人頁面 (跳轉至 /customers/profile) #}
+            <a href="/customers/profile">個人頁面</a>
+        </div>
+    </div>
+
+    <div class="content-container">
+        
+        <h2 class="section-title">🔥 熱門推薦 (Bestsellers)</h2>
+        <div class="books-scroll-wrapper">
+            {% for book in bestsellers %}
+                {% include 'customer/book_card.jinja' %}
+            {% endfor %}
+        </div>
+        
+        <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
+        <div class="books-scroll-wrapper">
+            {% for book in new_arrivals %}
+                {% include 'customer/book_card.jinja' %}
+            {% endfor %}
+        </div>
+
+        <h2 class="section-title">🏷️ 促銷中 (On Sale)</h2>
+        <div class="books-scroll-wrapper">
+            {% for book in promotions %}
+                {% include 'customer/book_card.jinja' %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const bookId = event.target.dataset.bookId;
+                    const minPrice = event.target.dataset.minPrice;
+                    
+                    try {
+                        const response = await fetch('/customers/cart-items', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                book_id: bookId,
+                                price: minPrice,
+                                book_bookstore_mapping_id: bookId, 
+                                quantity: 1
+                            })
+                        });
+
+                        if (response.ok) {
+                            alert('商品已加入購物車！');
+                        } else {
+                            alert('加入購物車失敗，請稍後再試。');
+                        }
+                    } catch (error) {
+                        console.error('API 錯誤:', error);
+                        alert('網路錯誤，無法加入購物車。');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
