@@ -93,6 +93,7 @@ async def checkout_page(request: Request, checkout_error: Optional[str] = None):
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
+
 @router.get("/books")
 async def search_books_redirect(q: Optional[str] = None):
     from fastapi.responses import RedirectResponse
@@ -257,4 +258,3 @@ async def checkout_page(
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
     
-
