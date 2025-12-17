@@ -11,7 +11,6 @@
             color: #333;
         }
 
-        /* 固定導航列 - 保持同學的原有樣式 */
         .sticky-bar {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 60px;
@@ -27,7 +26,18 @@
         .logo-home { font-size: 24px; font-weight: bold; color: #4CAF50; text-decoration: none; }
         .search-bar { width: 40%; padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; font-size: 14px; }
         .nav-icons a { margin-left: 15px; color: #333; text-decoration: none; font-size: 14px; position: relative; }
-        .nav-icons span { background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: -10px; right: -10px; }
+        
+        /* 購物車數量標籤樣式 */
+        .cart-badge { 
+            background-color: red; 
+            color: white; 
+            border-radius: 50%; 
+            padding: 2px 6px; 
+            font-size: 10px; 
+            position: absolute; 
+            top: -10px; 
+            right: -10px; 
+        }
 
         /* 主要內容容器 */
         .main-content {
@@ -46,16 +56,46 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .book-cover { flex: 0 0 350px; }
-        .book-cover img { width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+         .book-cover { 
+            flex: 0 0 300px; 
+            width: 300px;
+            height: 400px; /* 固定高度以維持佔位符比例 */
+            background-color: #ddd; /* 預設灰色背景 */
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+
+        }
+
+
+
+        /* 當圖片找不到時顯示的長寬文字 */
+        .book-cover::after {
+            content: "300 x 400";
+            color: #888;
+            font-size: 24px;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .book-cover img { 
+            width: 100%; 
+            height: 100%;
+            object-fit: cover; /* 確保圖片充滿容器 */
+            position: relative;
+            z-index: 2; /* 圖片成功讀取時覆蓋文字 */
+            display: block;
+        }
 
         .book-info-main { flex: 1; }
         .book-title { font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; }
 
-        /* 解決「字很歪」的關鍵：使用 Grid 對齊標籤 */
         .info-grid {
             display: grid;
-            grid-template-columns: 80px 1fr; /* 固定標籤寬度為 80px */
+            grid-template-columns: 80px 1fr;
             row-gap: 12px;
             font-size: 16px;
             margin-bottom: 25px;
@@ -71,7 +111,7 @@
             color: #444;
         }
 
-        /* 銷售操作區表格 */
+        /* 銷售操作區 */
         .sales-section {
             margin-top: 30px;
             background: white;
@@ -84,6 +124,16 @@
         .sales-table { width: 100%; border-collapse: collapse; }
         .sales-table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; color: #666; }
         .sales-table td { padding: 15px 12px; border-bottom: 1px solid #eee; }
+        
+        /* 修正：將原本的 inline style 轉為 CSS class */
+        .bookstore-link {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        .bookstore-link:hover {
+            text-decoration: underline;
+        }
+
         .price-tag { color: #d9534f; font-weight: bold; font-size: 18px; }
         
         .add-cart-btn {
@@ -101,7 +151,9 @@
         <a href="/frontend/home" class="logo-home">Bookstore</a>
         <input type="text" class="search-bar" placeholder="全站搜尋...">
         <div class="nav-icons">
-            <a href="/customers/cart">購物車 <span>{{ cart_count or 0 }}</span></a>
+            <a href="/customers/cart">
+                購物車 <span id="cart-count" class="cart-badge">{{ cart_count or 0 }}</span>
+            </a>
             <a href="/customers/orders">訂單</a>
             <a href="/customers/profile">個人頁面</a>
         </div>
@@ -122,21 +174,16 @@
                     <div class="info-value"><a href="/books/list?author={{ book.author }}">{{ book.author }}</a></div>
                     
                     <div class="info-label">出版社</div>
-                    <div class="info-value">{{ book.publisher }}</a></div>
-                    
-                    <div class="info-label">ISBN</div>
+                    <div class="info-value">{{ book.publisher }}</div> <div class="info-label">ISBN</div>
                     <div class="info-value">{{ book.isbn }}</div>
                     
                     <div class="info-label">出版日期</div>
                     <div class="info-value">{{ book.publish_date }}</div>
                     
                     <div class="info-label">分類</div>
-                    <div class="info-value">{{ book.category }}</a></div>
-                    
-                    {% if book.series %}
+                    <div class="info-value">{{ book.category }}</div> {% if book.series %}
                     <div class="info-label">系列</div>
-                    <div class="info-value">{{ book.series }}</a></div>
-                    {% endif %}
+                    <div class="info-value">{{ book.series }}</div> {% endif %}
                 </div>
 
                 <div class="description-box">
@@ -158,11 +205,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {# 這裡會根據 price 由低到高排序 #}
                     {% for mapping in sales_mappings|sort(attribute='price') %}
                     <tr>
                         <td>
-                            <a href="/bookstore/{{ mapping.bookstore_id }}/book/{{ book.book_id }}" style="color: #0056b3; text-decoration: none;">
+                            <a href="/bookstore/{{ mapping.bookstore_id }}/book/{{ book.book_id }}" class="bookstore-link">
                                 {{ mapping.bookstore_name }}
                             </a>
                         </td>
@@ -197,11 +243,17 @@
                         quantity: 1
                     })
                 });
+
                 if (response.ok) {
+                    // 優化：動態更新 UI 數量，不重整頁面
+                    const countElement = document.getElementById('cart-count');
+                    let currentCount = parseInt(countElement.innerText) || 0;
+                    countElement.innerText = currentCount + 1;
+                    
                     alert('已成功加入購物車！');
-                    window.location.reload();
                 } else {
-                    alert('加入購物車失敗，請稍後再試。');
+                    const errorData = await response.json();
+                    alert('加入失敗：' + (errorData.detail || '未知錯誤'));
                 }
             } catch (error) {
                 console.error('Error:', error);

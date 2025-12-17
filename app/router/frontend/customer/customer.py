@@ -131,7 +131,7 @@ async def search_books_page(
     )
 
 
-@router.get("/book/{book_id}")
+@router.get("/book/{book_id}")  # 修正路徑，現在能匹配 /book/UUID
 async def get_book_detail_page(
     book_id: str,
     request: Request,
@@ -177,4 +177,4 @@ async def get_book_detail_page(
         "cart_count": 0,  # 可根據需求加入購物車數量邏輯
     }
 
-    return templates.TemplateResponse("/customer/books.jinja", context=context)
+    return templates.TemplateResponse("/customer/books_detail.jinja", context=context)
