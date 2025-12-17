@@ -2,7 +2,7 @@
 Class definition for BookBookstoreMapping
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, Integer, text, CheckConstraint
@@ -32,10 +32,10 @@ class BookBookstoreMapping(Base):
     book_id: Mapped[UUID] = mapped_column(ForeignKey("book.book_id"))
     bookstore_id: Mapped[UUID] = mapped_column(ForeignKey("bookstore.bookstore_id"))
 
-    book: Mapped["Book"] = relationship(back_populates="book_bookstore_mapping")
-    bookstore: Mapped["Bookstore"] = relationship(back_populates="book_bookstore_mapping")
-    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="book_bookstore_mapping")
-    cart_items: Mapped[list["CartItem"]] = relationship(back_populates="book_bookstore_mapping")
+    book: Mapped["Book"] = relationship(back_populates="book_bookstore_mappings")
+    bookstore: Mapped["Bookstore"] = relationship(back_populates="book_bookstore_mappings")
+    order_items: Mapped[List["OrderItem"]] = relationship(back_populates="book_bookstore_mapping")
+    cart_items: Mapped[List["CartItem"]] = relationship(back_populates="book_bookstore_mapping")
 
     __table_args__ = (
         CheckConstraint(price >= 0, name="price_non_negative"),

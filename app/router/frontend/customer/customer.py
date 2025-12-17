@@ -81,6 +81,7 @@ async def checkout_page(request: Request, checkout_error: Optional[str] = None):
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
+
 @router.get("/books")
 async def search_books_page(
     request: Request,
@@ -89,7 +90,7 @@ async def search_books_page(
     db: AsyncSession = Depends(get_db_session),
 ):
     token_payload, customer = login_data
-    
+
     # Fetch cart count for the navbar
     cart_count = 0
     try:
@@ -107,20 +108,22 @@ async def search_books_page(
     books_data = []
     for b in books:
         # Note: In a real scenario, we would join with BookBookstoreMapping to get the actual min_price
-        books_data.append({
-            "book_id": b.book_id,
-            "title": b.title,
-            "author": b.author,
-            "image_url": "https://placehold.co/180x120", # Placeholder image
-            "min_price": "N/A" # Placeholder price
-        })
+        books_data.append(
+            {
+                "book_id": b.book_id,
+                "title": b.title,
+                "author": b.author,
+                "image_url": "https://placehold.co/180x120",  # Placeholder image
+                "min_price": "N/A",  # Placeholder price
+            }
+        )
 
     context = {
         "request": request,
         "books": books_data,
         "q": q or "",
         "cart_count": cart_count,
-        "customer": customer
+        "customer": customer,
     }
 
     return templates.TemplateResponse(

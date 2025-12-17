@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
 from uuid import UUID
 
+from sqlalchemy.orm import joinedload
 from app.db.models.coupon import Coupon
 
 
@@ -38,3 +39,4 @@ async def get_active_bookstore_coupons(db: AsyncSession):
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
