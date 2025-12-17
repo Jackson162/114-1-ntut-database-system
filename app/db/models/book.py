@@ -6,7 +6,7 @@ from datetime import date
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import Date, Text, text, String
+from sqlalchemy import Date, Text, text, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -21,6 +21,7 @@ class Book(Base):
     """
 
     __tablename__ = "book"
+    __table_args__ = (UniqueConstraint("isbn", name="uc_isbn"),)
 
     book_id: Mapped[UUID] = mapped_column(
         primary_key=True, server_default=text("gen_random_uuid()")
