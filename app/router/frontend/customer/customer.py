@@ -10,6 +10,10 @@ from app.enum.user import UserRole
 from app.db.models.customer import Customer
 from app.db.operator.order import get_orders_by_customer_account
 from app.db.operator.book import search_books, get_all_books
+from app.db.operator.coupon import (
+    get_active_admin_coupons,
+    get_active_bookstore_coupons,
+)
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
 
@@ -123,3 +127,48 @@ async def search_books_page(
         "/customer/books.jinja", context=context, status_code=status.HTTP_200_OK
     )
     
+@router.get("/profile")
+async def customer_profile_page(
+    request: Request,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+):
+    _, customer = login_data
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "cart_count": 0,   
+        "page": "profile", 
+    }
+
+    return templates.TemplateResponse(
+        "/customer/profile.jinja",
+        context=context,
+        status_code=status.HTTP_200_OK,
+    )
+@router.get("/coupons")
+async def customer_coupons_page(
+    request: Request,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    admin_coupons = await get_active_admin_coupons(db)
+    bookstore_coupons = await get_active_bookstore_coupons(db)
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "cart_count": 0,
+        "page": "coupons",
+        "admin_coupons": admin_coupons,
+        "bookstore_coupons": bookstore_coupons,
+    }
+
+    return templates.TemplateResponse(
+        "/customer/profile.jinja",
+        context=context,
+        status_code=status.HTTP_200_OK,
+    )
+
