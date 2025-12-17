@@ -151,6 +151,10 @@ async def create_customer_order(
 
         for cart_item in cart.cart_items:
             bookstore_id = cart_item.book_bookstore_mapping.bookstore_id
+            
+            if bookstore_id and item_bs_id != bookstore_id:
+                continue
+                
             if bookstore_id not in bookstore_id_to_cart_items:
                 bookstore_id_to_cart_items[bookstore_id] = []
             bookstore_id_to_cart_items[bookstore_id].append(cart_item)
@@ -231,7 +235,8 @@ async def create_customer_order(
                     db=db, mapping_id=data["mapping_id"], quantity=data["quantity"]
                 )
 
-        await clear_cart_items(db, cart.cart_id)
+        for item in cart_items:
+                await delete_cart_item_by_item_id(db=db, cart_item_id=item.cart_item_id)
 
         await db.commit()
 

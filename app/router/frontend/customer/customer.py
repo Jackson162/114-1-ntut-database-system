@@ -1,4 +1,5 @@
 from typing import Tuple, Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends, Request, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -240,3 +241,20 @@ async def view_cart(
         "/customer/carts.jinja", context=context, status_code=status.HTTP_200_OK
     )
     
+@router.get("/checkout")
+async def checkout_page(
+    request: Request, 
+    checkout_error: Optional[str] = None,
+    bookstore_id: Optional[UUID] = None # 新增接收 bookstore_id
+):
+    context = {
+        "request": request, 
+        "checkout_error": checkout_error,
+        "bookstore_id": bookstore_id # 傳遞給 template
+    }
+
+    return templates.TemplateResponse(
+        "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+    
+

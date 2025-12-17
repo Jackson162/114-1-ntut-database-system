@@ -74,132 +74,11 @@
             color: #2c3e50;
         }
 
-        .cart-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .cart-table th, .cart-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        .cart-table th {
-            background-color: #f1f3f5;
-            color: #495057;
-            font-weight: 600;
-        }
-        
-        /* Product Column */
-        .product-info {
-            display: flex;
-            align-items: center;
-        }
-        .product-info img {
-            width: 60px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 15px;
-            background-color: #ddd;
-        }
-        .product-details .title {
-            font-weight: bold;
-            color: #0056b3;
-            margin-bottom: 4px;
-            display: block;
-            text-decoration: none;
-        }
-        .product-details .meta {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 2px;
-        }
-
-        /* Quantity Input */
-        .qty-input {
-            width: 50px;
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-        }
-
-        /* Actions */
-        .remove-btn {
-            color: #dc3545;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 5px 10px;
-            transition: color 0.2s;
-        }
-        .remove-btn:hover {
-            color: #a71d2a;
-            text-decoration: underline;
-        }
-
-        /* Summary Section */
-        .cart-summary {
-            margin-top: 30px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            width: 300px;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        .summary-row.total {
-            font-size: 20px;
-            font-weight: bold;
-            color: #d9534f;
-            border-top: 2px solid #eee;
-            padding-top: 10px;
-        }
-        
-        .checkout-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-            text-decoration: none;
-            margin-top: 15px;
-            transition: background-color 0.2s;
-            display: inline-block;
-        }
-        .checkout-btn:hover {
-            background-color: #218838;
-        }
-        
-        .empty-cart {
-            text-align: center;
-            padding: 50px;
-            color: #777;
-        }
-        .continue-shopping {
-            color: #007bff;
-            text-decoration: none;
-        }
-    </* 表格與群組樣式 */
+        /* 表格與群組樣式 */
         .store-group { margin-bottom: 30px; }
+        
         .store-header { 
-            background-color: #e9ecef; 
+            background-color: #e9ecef;
             padding: 10px 15px; 
             font-weight: bold; 
             color: #495057; 
@@ -211,25 +90,143 @@
         }
         .store-header::before { content: '🏪'; margin-right: 8px; }
         
-        .cart-table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 0 0 8px 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #ddd; }
-        .cart-table th, .cart-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .cart-table th { background-color: #f8f9fa; color: #6c757d; font-weight: 600; font-size: 14px; }
-        
-        .product-info { display: flex; align-items: center; }
-        .product-info img { width: 60px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px; background-color: #ddd; }
-        .product-details .title { font-weight: bold; color: #0056b3; margin-bottom: 4px; display: block; text-decoration: none; }
-        .product-details .meta { font-size: 12px; color: #666; margin-bottom: 2px; }
-        .qty-input { width: 50px; padding: 5px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; }
-        .remove-btn { color: #dc3545; background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px 10px; transition: color 0.2s; }
-        .remove-btn:hover { color: #a71d2a; text-decoration: underline; }
+        /* 修改 table 樣式，移除底部的圓角，與 footer 接合 */
+        .cart-table { 
+            width: 100%;
+            border-collapse: collapse; 
+            background-color: white; 
+            border-radius: 0; /* Changed from 0 0 8px 8px */
+            overflow: hidden; 
+            /* box-shadow: 0 1px 3px rgba(0,0,0,0.1); */
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
 
-        .cart-summary { margin-top: 30px; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: flex-end; }
-        .summary-row { display: flex; justify-content: space-between; width: 300px; margin-bottom: 10px; font-size: 16px; }
-        .summary-row.total { font-size: 20px; font-weight: bold; color: #d9534f; border-top: 2px solid #eee; padding-top: 10px; }
-        .checkout-btn { background-color: #28a745; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; text-decoration: none; margin-top: 15px; transition: background-color 0.2s; display: inline-block; }
-        .checkout-btn:hover { background-color: #218838; }
-        .empty-cart { text-align: center; padding: 50px; color: #777; }
-        .continue-shopping { color: #007bff; text-decoration: none; }
+        /* 新增每個書店的底部結帳區塊樣式 */
+        .store-footer {
+            background-color: white;
+            padding: 15px 20px;
+            border: 1px solid #ddd;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .cart-table th, .cart-table td { 
+            padding: 15px; 
+            text-align: left;
+            border-bottom: 1px solid #eee; 
+        }
+        .cart-table th { 
+            background-color: #f8f9fa; 
+            color: #6c757d;
+            font-weight: 600; 
+            font-size: 14px; 
+        }
+        
+        /* Product Column */
+        .product-info { display: flex; align-items: center; }
+        .product-info img { 
+            width: 60px; 
+            height: 80px; 
+            object-fit: cover;
+            border-radius: 4px; 
+            margin-right: 15px; 
+            background-color: #ddd; 
+        }
+        .product-details .title { 
+            font-weight: bold;
+            color: #0056b3; 
+            margin-bottom: 4px; 
+            display: block; 
+            text-decoration: none; 
+        }
+        .product-details .meta { 
+            font-size: 12px;
+            color: #666; 
+            margin-bottom: 2px; 
+        }
+
+        /* Quantity Input */
+        .qty-input { 
+            width: 50px; 
+            padding: 5px; 
+            text-align: center;
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+        }
+
+        /* Actions */
+        .remove-btn { 
+            color: #dc3545; 
+            background: none;
+            border: none; 
+            cursor: pointer; 
+            font-size: 14px; 
+            padding: 5px 10px; 
+            transition: color 0.2s;
+        }
+        .remove-btn:hover { 
+            color: #a71d2a; 
+            text-decoration: underline;
+        }
+
+        /* Summary Section */
+        .cart-summary { 
+            margin-top: 30px; 
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end;
+        }
+        .summary-row { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 300px; 
+            margin-bottom: 10px; 
+            font-size: 16px;
+        }
+        .summary-row.total { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #d9534f; 
+            border-top: 2px solid #eee;
+            padding-top: 10px; 
+        }
+        
+        .checkout-btn { 
+            background-color: #28a745; 
+            color: white; 
+            padding: 12px 30px;
+            border: none; 
+            border-radius: 5px; 
+            font-size: 18px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            margin-top: 15px; 
+            transition: background-color 0.2s; 
+            display: inline-block;
+        }
+        .checkout-btn:hover { 
+            background-color: #218838; 
+        }
+        
+        .empty-cart { 
+            text-align: center; 
+            padding: 50px; 
+            color: #777;
+        }
+        .continue-shopping { 
+            color: #007bff; 
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -275,7 +272,7 @@
                                     <div class="product-details">
                                         <a href="#" class="title">{{ item.title }}</a>
                                         <div class="meta">Author: {{ item.author }}</div>
-                                        </div>
+                                    </div>
                                 </div>
                             </td>
                             <td>${{ item.price }}</td>
@@ -298,20 +295,29 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                
+                <div class="store-footer">
+                    <div style="font-size: 16px;">
+                        Store Total: <span style="font-weight: bold; color: #d9534f;">${{ items | sum(attribute='subtotal') }}</span>
+                    </div>
+                    <a href="/frontend/customers/checkout?bookstore_id={{ items[0].bookstore_id }}" class="checkout-btn" style="margin-top: 0; padding: 8px 20px; font-size: 16px;">
+                        Checkout from {{ bookstore_name }}
+                    </a>
+                </div>
+
             </div>
             {% endfor %}
 
             <div class="cart-summary">
                 <div class="summary-row">
-                    <span>Total Items:</span>
+                    <span>Total Items (All Stores):</span>
                     <span id="total-items">{{ total_items }}</span>
                 </div>
                 <div class="summary-row total">
-                    <span>Total Price:</span>
+                    <span>Total Price (All Stores):</span>
                     <span id="total-price">${{ total_price }}</span>
                 </div>
-                <a href="/frontend/customers/checkout" class="checkout-btn">Proceed to Checkout</a>
-            </div>
+                </div>
 
         {% else %}
             <div class="empty-cart">
@@ -325,12 +331,12 @@
     </div>
 
     <script>
-        // (保留原本 JS 邏輯)
         async function updateQuantity(input) {
             const cartItemId = input.dataset.cartItemId;
             const newQuantity = parseInt(input.value);
             const bookId = input.dataset.bookId;
             const bookstoreId = input.dataset.bookstoreId;
+
             if (newQuantity < 1) {
                 alert("Quantity must be at least 1");
                 input.value = 1;
@@ -347,6 +353,7 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formData
                 });
+
                 if (response.ok) {
                     window.location.reload();
                 } else {
@@ -359,10 +366,13 @@
 
         async function removeItem(cartItemId) {
             if (!confirm('Are you sure you want to remove this item?')) return;
+
             try {
-                const response = await fetch('/customers/cart-items/{cart_item_id}/delete', {
+                // 修改處：使用反引號 ` ` 包裹 URL，這樣 ${cartItemId} 才會被正確替換
+                const response = await fetch(`/customers/cart-items/${cartItemId}/delete`, {
                     method: 'POST'
                 });
+
                 if (response.ok) {
                     window.location.reload();
                 } else {
