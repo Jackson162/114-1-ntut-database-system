@@ -39,7 +39,6 @@ async def create_book_bookstore_mapping(
         )
         .returning(BookBookstoreMapping.book_bookstore_mapping_id)
     )
-    await db.execute(query)
 
     result = await db.execute(query)
 

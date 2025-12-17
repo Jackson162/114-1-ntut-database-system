@@ -61,7 +61,7 @@ async def search_books(db: AsyncSession, keyword: str):
 async def get_book_by_isbn(db: AsyncSession, isbn: str):
     query = select(Book).where(Book.isbn == isbn)
     result = await db.execute(query)
-    return result.one_or_none()
+    return result.scalars().one_or_none()
 
 
 async def create_book(
@@ -86,4 +86,4 @@ async def create_book(
 
     result = await db.execute(query)
 
-    return result.scalar_one()
+    return result.scalars().one()

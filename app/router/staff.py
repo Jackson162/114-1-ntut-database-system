@@ -18,6 +18,10 @@ from app.db.operator.book import create_book, get_book_by_isbn
 from app.db.operator.bookbookstoremapping import get_book_mapping, create_book_bookstore_mapping
 
 from app.util.auth import JwtPayload
+from app.logging.logger import get_logger
+
+logger = get_logger()
+
 
 router = APIRouter()
 
@@ -135,5 +139,6 @@ async def create_staff_book(
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     except Exception as err:
         await db.rollback()
+        logger.error(err)
         redirect_url = f"/frontend/staffs/books?create_book_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

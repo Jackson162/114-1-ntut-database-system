@@ -16,6 +16,49 @@
         <h1 class="mb-4">Book Stock</h1>
         <p>Welcome, {{ staff.name }}!</p>
 
+        <div  id="addBookForm">
+            <div class="card card-body mb-4">
+                <h5 class="card-title">Add a New Book</h5>
+                <form action="/staffs/books/create" method="post">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Author</label>
+                        <input type="text" class="form-control" id="author" name="author" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="price" name="price" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="store_quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="store_quantity" name="store_quantity" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="publisher" class="form-label">Publisher</label>
+                        <input type="text" class="form-control" id="publisher" name="publisher" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="isbn" name="isbn" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <input type="text" class="form-control" id="category" name="category" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="publish_date" class="form-label">Publish Date</label>
+                        <input type="date" class="form-control" id="publish_date" name="publish_date" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Book</button>
+                </form>
+            </div>
+        </div>
+
         {% if list_book_error %}
             <div class="alert alert-danger">
                 <p>Sorry, we couldn't load the book list at this time.</p>
@@ -35,6 +78,9 @@
                 <p>Adding Book to Stock Succeeds!</p>
             </div>
         {% endif %}
+
+
+
 
         {% if books %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
