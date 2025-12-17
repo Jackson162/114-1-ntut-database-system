@@ -213,6 +213,8 @@ async def delete_staff_book_mapping(
         if mapping is None:
             raise Exception("The book does not exist in this bookstore")
 
+        # check if the mapping is referenced by the cart items or order items
+
         mapping = await delete_book_bookstore_mapping(
             db=db,
             book_bookstore_mapping_id=book_bookstore_mapping_id,
