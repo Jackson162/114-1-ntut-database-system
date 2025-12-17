@@ -76,8 +76,15 @@ If you change the model files in `app/database/models`,
 1. set the env variable: `DO_INIT_DB` to true, and run the server.
    
 # db migration downgrade
+
+downgrad 1 version
 ```
 ./.venv/bin/python -m alembic downgrade head-1
+```
+
+downgrad all versions
+```
+alembic downgrade base
 ```
 
 # Git Flow for development
