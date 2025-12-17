@@ -162,8 +162,8 @@
         }
         .book-card img {
             width: 100%;
-            height: 120px; 
-            object-fit: cover;
+            height: 180; 
+            object-fit: contain;
             border-radius: 4px;
             margin-bottom: 8px;
         }
@@ -200,28 +200,42 @@
             cursor: pointer;
             font-size: 13px;
         }
+		
+    /* 新增書店區塊樣式 */
+        .bookstore-block {
+            margin-bottom: 30px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .bookstore-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .bookstore-name::before {
+            content: '🏪';
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
 
     <div class="sticky-bar">
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
-        
         <form class="search-container" action="/frontend/customers/home" method="get">
             <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
-            
             {% if q %}
               <a href="/frontend/customers/home" class="clear-btn" title="Clear Search">✕</a>
             {% endif %}
-            
             <button type="submit" class="search-btn">Search</button>
         </form>
-        
         <div class="nav-icons">
-            <a href="/frontend/customers/cart">
-                購物車
-                <span>{{ cart_count or 0 }}</span>
-            </a>
+            <a href="/frontend/customers/cart">購物車<span>{{ cart_count or 0 }}</span></a>
             <a href="/frontend/customers/orders">訂單</a>
             <a href="/frontend/customers/profile">個人頁面</a>
         </div>
@@ -232,51 +246,56 @@
         {% if q %}
             <h2 class="section-title">搜尋結果: "{{ q }}"</h2>
             
-            {% if books %}
-                <div class="books-grid">
-                    {% for book in books %}
-                        {% include 'customer/book_card.jinja' %}
-                    {% endfor %}
-                </div>
+            {% if grouped_books %}
+                {% for store_name, books in grouped_books.items() %}
+                    <div class="bookstore-block">
+                        <div class="bookstore-name">{{ store_name }}</div>
+                        <div class="books-grid">
+                            {% for book in books %}
+                                {% include 'customer/book_card.jinja' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
             {% else %}
-                <div class="no-results">
-                    找不到相關書籍。
-                </div>
+                <div class="no-results">找不到相關書籍。</div>
             {% endif %}
 
         {% else %}
+            {% if bestsellers %}
             <h2 class="section-title">🔥 熱門推薦 (Bestsellers)</h2>
             <div class="books-scroll-wrapper">
-                {% if bestsellers %}
-                    {% for book in bestsellers %}
-                        {% include 'customer/book_card.jinja' %}
-                    {% endfor %}
-                {% else %}
-                    <p style="color:#999; margin-left:10px;">暫無推薦</p>
-                {% endif %}
+                {% for book in bestsellers %}
+                    {% include 'customer/book_card.jinja' %}
+                {% endfor %}
             </div>
+            {% endif %}
         
             <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
-            <div class="books-scroll-wrapper">
-                {% if new_arrivals %}
-                    {% for book in new_arrivals %}
-                        {% include 'customer/book_card.jinja' %}
-                    {% endfor %}
-                {% else %}
-                    <p style="color:#999; margin-left:10px;">暫無新書</p>
-                {% endif %}
-            </div>
+            
+            {% if grouped_new_arrivals %}
+                {% for store_name, books in grouped_new_arrivals.items() %}
+                    <div class="bookstore-block">
+                        <div class="bookstore-name">{{ store_name }}</div>
+                        <div class="books-scroll-wrapper">
+                            {% for book in books %}
+                                {% include 'customer/book_card.jinja' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:#999; margin-left:10px;">暫無新書</p>
+            {% endif %}
 
+            {% if promotions %}
             <h2 class="section-title">🏷️ 促銷中 (On Sale)</h2>
             <div class="books-scroll-wrapper">
-                {% if promotions %}
-                    {% for book in promotions %}
-                        {% include 'customer/book_card.jinja' %}
-                    {% endfor %}
-                {% else %}
-                    <p style="color:#999; margin-left:10px;">暫無促銷活動</p>
-                {% endif %}
+                {% for book in promotions %}
+                    {% include 'customer/book_card.jinja' %}
+                {% endfor %}
             </div>
+            {% endif %}
             
         {% endif %}
 
@@ -285,12 +304,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        
                 button.addEventListener('click', async (event) => {
                     const bookId = event.target.dataset.bookId;
                     const minPrice = event.target.dataset.minPrice;
-                    const bookstoreId = event.target.dataset.bookstoreId; // 取得 bookstore_id
-                    
+                    const bookstoreId = event.target.dataset.bookstoreId; 
+               
                     if (!bookstoreId || bookstoreId === 'None' || bookstoreId === 'null') {
                         alert('此商品目前無法購買（無供應商資訊）。');
                         return;
@@ -304,9 +322,7 @@
 
                         const response = await fetch('/customers/cart-items/create_or_update', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded', 
-                            },
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: formData 
                         });
                         if (response.ok) {

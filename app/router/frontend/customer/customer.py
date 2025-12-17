@@ -18,7 +18,17 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from app.util.auth import decode_jwt
 from app.db.operator.cart import get_cart_item_count, get_cart_details
-from app.db.operator.book import get_all_categories, get_new_arrivals,get_book_display_data
+from app.db.operator.book import (
+    search_books, 
+    get_all_books, 
+    get_all_categories, 
+    get_new_arrivals,
+    get_book_display_data,
+    search_books_with_mappings,
+    get_new_arrivals_with_mappings,
+    search_books_with_bookstore_details,     
+    get_new_arrivals_with_bookstore_details    
+)
 
 
 router = APIRouter()
@@ -90,10 +100,32 @@ async def search_books_redirect(q: Optional[str] = None):
         url += f"?q={q}"
     return RedirectResponse(url=url)
 
+def group_results_by_bookstore(rows) -> dict[str, list[dict[str, any]]]:
+    """
+    輸入 rows: List of (Book, Mapping, Bookstore)
+    輸出: {"Bookstore Name": [BookDict, ...]}
+    """
+    grouped = {}
+    for book, mapping, bookstore in rows:
+        bs_name = bookstore.name
+        if bs_name not in grouped:
+            grouped[bs_name] = []
+        
+        grouped[bs_name].append({
+            "book_id": book.book_id,
+            "title": book.title,
+            "author": book.author,
+            "image_url": "/static/book.png",
+            "min_price": mapping.price,       # 前端 book_card 使用 min_price 變數名
+            "bookstore_id": bookstore.bookstore_id,
+            "bookstore_name": bookstore.name
+        })
+    return grouped
+
 @router.get("/home")
 async def customer_homepage(
     request: Request,
-    q: Optional[str] = None, # 新增搜尋參數
+    q: Optional[str] = None, 
     db: AsyncSession = Depends(get_db_session),
 ):
     token = request.cookies.get("auth_token")
@@ -116,40 +148,41 @@ async def customer_homepage(
         "request": request,
         "cart_count": cart_count,
         "q": q or "",
+        "grouped_books": {},     # 初始化
+        "grouped_new_arrivals": {}, # 初始化
     }
 
     if q:
-        books = await search_books(db, q)
+        # 搜尋模式：使用新函式並分組
+        rows = await search_books_with_bookstore_details(db, q)
+        grouped_results = group_results_by_bookstore(rows)
         
-        books_data = []
-        for b in books:
-            books_data.append(await get_book_display_data(db, b))
-            
         context.update({
             "is_search_mode": True,
-            "books": books_data,
+            "grouped_books": grouped_results, 
         })
     else:
+        # 首頁模式
         categories = []
         try:
             categories = await get_all_categories(db)
         except:
             pass
         
-        new_books = []
+        # 新書：使用新函式並分組
+        new_rows = []
         try:
-            new_books = await get_new_arrivals(db)
+            new_rows = await get_new_arrivals_with_bookstore_details(db)
         except:
             pass
-        
-        new_arrivals_data = []
-        for b in new_books:
-            new_arrivals_data.append(await get_book_display_data(db, b))
+            
+        grouped_new_arrivals = group_results_by_bookstore(new_rows)
         
         context.update({
             "is_search_mode": False,
             "categories": categories,
-            "new_arrivals": new_arrivals_data,
+            "grouped_new_arrivals": grouped_new_arrivals, # 傳遞分組後的資料
+            # 暫時留空其他區塊
             "bestsellers": [], 
             "promotions": [],  
         })
@@ -158,7 +191,7 @@ async def customer_homepage(
         "customer/home.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
- 
+
 @router.get("/cart")
 async def view_cart(
     request: Request,
@@ -174,7 +207,6 @@ async def view_cart(
     total_items = 0
     
     for row in rows:
-        
         quantity = row[1]
         price = row[8]
         subtotal = price * quantity
@@ -187,9 +219,9 @@ async def view_cart(
             "book_id": row[2],
             "title": row[3],
             "author": row[4],
-            "image_url": row[5],
+            "image_url": "/static/book.png",
             "bookstore_id": row[6],
-            "bookstore_name": row[7],
+            "bookstore_name": row[7], # 確保有這個欄位供模板 groupby 使用
             "price": price,
             "stock": row[9],
             "subtotal": subtotal
@@ -207,4 +239,4 @@ async def view_cart(
     return templates.TemplateResponse(
         "/customer/cart.jinja", context=context, status_code=status.HTTP_200_OK
     )
-   
+    

@@ -196,6 +196,40 @@
             color: #007bff;
             text-decoration: none;
         }
+    </* 表格與群組樣式 */
+        .store-group { margin-bottom: 30px; }
+        .store-header { 
+            background-color: #e9ecef; 
+            padding: 10px 15px; 
+            font-weight: bold; 
+            color: #495057; 
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+        }
+        .store-header::before { content: '🏪'; margin-right: 8px; }
+        
+        .cart-table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 0 0 8px 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+        .cart-table th, .cart-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .cart-table th { background-color: #f8f9fa; color: #6c757d; font-weight: 600; font-size: 14px; }
+        
+        .product-info { display: flex; align-items: center; }
+        .product-info img { width: 60px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px; background-color: #ddd; }
+        .product-details .title { font-weight: bold; color: #0056b3; margin-bottom: 4px; display: block; text-decoration: none; }
+        .product-details .meta { font-size: 12px; color: #666; margin-bottom: 2px; }
+        .qty-input { width: 50px; padding: 5px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; }
+        .remove-btn { color: #dc3545; background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px 10px; transition: color 0.2s; }
+        .remove-btn:hover { color: #a71d2a; text-decoration: underline; }
+
+        .cart-summary { margin-top: 30px; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: flex-end; }
+        .summary-row { display: flex; justify-content: space-between; width: 300px; margin-bottom: 10px; font-size: 16px; }
+        .summary-row.total { font-size: 20px; font-weight: bold; color: #d9534f; border-top: 2px solid #eee; padding-top: 10px; }
+        .checkout-btn { background-color: #28a745; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; text-decoration: none; margin-top: 15px; transition: background-color 0.2s; display: inline-block; }
+        .checkout-btn:hover { background-color: #218838; }
+        .empty-cart { text-align: center; padding: 50px; color: #777; }
+        .continue-shopping { color: #007bff; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -203,10 +237,7 @@
     <div class="sticky-bar">
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
         <div class="nav-icons">
-            <a href="/frontend/customers/cart">
-                購物車
-                <span>{{ cart_count or 0 }}</span>
-            </a>
+            <a href="/frontend/customers/cart">購物車<span>{{ cart_count or 0 }}</span></a>
             <a href="/frontend/customers/orders">訂單</a>
             <a href="/frontend/customers/profile">個人頁面</a>
         </div>
@@ -219,112 +250,105 @@
         </div>
 
         {% if cart_items %}
-        <table class="cart-table">
-            <thead>
-                <tr>
-                    <th style="width: 45%;">Product</th>
-                    <th style="width: 15%;">Price</th>
-                    <th style="width: 15%;">Quantity</th>
-                    <th style="width: 15%;">Subtotal</th>
-                    <th style="width: 10%;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart_items %}
-                <tr id="row-{{ item.cart_item_id }}">
-                    <td>
-                        <div class="product-info">
-                            <img src="{{ item.image_url }}" alt="{{ item.title }}">
-                            <div class="product-details">
-                                <a href="#" class="title">{{ item.title }}</a>
-                                <div class="meta">Author: {{ item.author }}</div>
-                                <div class="meta">Store: {{ item.bookstore_name }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${{ item.price }}</td>
-                    <td>
-                        <input type="number" 
-                               class="qty-input" 
-                               value="{{ item.quantity }}" 
-                               min="1" 
-                               max="{{ item.stock }}"
-                               data-cart-item-id="{{ item.cart_item_id }}"
-                               data-book-id="{{ item.book_id }}"
-                               data-bookstore-id="{{ item.bookstore_id }}"
-                               onchange="updateQuantity(this)">
-                    </td>
-                    <td class="subtotal" id="subtotal-{{ item.cart_item_id }}">${{ item.subtotal }}</td>
-                    <td>
-                        <button class="remove-btn" onclick="removeItem({{ item.cart_item_id }})">Remove</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        
+            {% for bookstore_name, items in cart_items|groupby('bookstore_name') %}
+            <div class="store-group">
+                <div class="store-header">
+                    {{ bookstore_name }}
+                </div>
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Product</th>
+                            <th style="width: 15%;">Price</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Subtotal</th>
+                            <th style="width: 10%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr id="row-{{ item.cart_item_id }}">
+                            <td>
+                                <div class="product-info">
+                                    <img src="{{ item.image_url }}" alt="{{ item.title }}">
+                                    <div class="product-details">
+                                        <a href="#" class="title">{{ item.title }}</a>
+                                        <div class="meta">Author: {{ item.author }}</div>
+                                        </div>
+                                </div>
+                            </td>
+                            <td>${{ item.price }}</td>
+                            <td>
+                                <input type="number" 
+                                       class="qty-input" 
+                                       value="{{ item.quantity }}" 
+                                       min="1" 
+                                       max="{{ item.stock }}"
+                                       data-cart-item-id="{{ item.cart_item_id }}"
+                                       data-book-id="{{ item.book_id }}"
+                                       data-bookstore-id="{{ item.bookstore_id }}"
+                                       onchange="updateQuantity(this)">
+                            </td>
+                            <td class="subtotal" id="subtotal-{{ item.cart_item_id }}">${{ item.subtotal }}</td>
+                            <td>
+                                <button class="remove-btn" onclick="removeItem({{ item.cart_item_id }})">Remove</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
 
-        <div class="cart-summary">
-            <div class="summary-row">
-                <span>Total Items:</span>
-                <span id="total-items">{{ total_items }}</span>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Total Items:</span>
+                    <span id="total-items">{{ total_items }}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Price:</span>
+                    <span id="total-price">${{ total_price }}</span>
+                </div>
+                <a href="/frontend/customers/checkout" class="checkout-btn">Proceed to Checkout</a>
             </div>
-            <div class="summary-row total">
-                <span>Total Price:</span>
-                <span id="total-price">${{ total_price }}</span>
-            </div>
-            
-            <a href="/frontend/customers/checkout" class="checkout-btn">Proceed to Checkout</a>
-        </div>
 
         {% else %}
-        <div class="empty-cart">
-            <h2>Your cart is empty.</h2>
-            <p>Looks like you haven't added any books yet.</p>
-            <br>
-            <a href="/frontend/customers/home" class="checkout-btn" style="background-color: #007bff;">Start Shopping</a>
-        </div>
+            <div class="empty-cart">
+                <h2>Your cart is empty.</h2>
+                <p>Looks like you haven't added any books yet.</p>
+                <br>
+                <a href="/frontend/customers/home" class="checkout-btn" style="background-color: #007bff;">Start Shopping</a>
+            </div>
         {% endif %}
 
     </div>
 
     <script>
-        // 更新數量 (Debounce or simple change)
+        // (保留原本 JS 邏輯)
         async function updateQuantity(input) {
             const cartItemId = input.dataset.cartItemId;
             const newQuantity = parseInt(input.value);
             const bookId = input.dataset.bookId;
             const bookstoreId = input.dataset.bookstoreId;
-
             if (newQuantity < 1) {
                 alert("Quantity must be at least 1");
                 input.value = 1;
                 return;
             }
-
-            // 這裡呼叫後端 API 更新數量
-            // 假設 API 為 /customers/cart-items/create_or_update (根據 home.jinja 的邏輯)
-            // 或是專門的 update endpoint
             try {
                 const formData = new URLSearchParams();
                 formData.append('book_id', bookId);
                 formData.append('bookstore_id', bookstoreId);
                 formData.append('quantity', newQuantity); 
-                // 注意：create_or_update 通常是 "加入" 邏輯 (原有+新增)，這裡如果是 "設定" 數量，
-                // 可能需要後端支援 set_quantity 模式，或者你需要計算差值。
-                // 為了簡單起見，這裡假設後端會自動處理，或者我們重新載入頁面。
                 
-                // 更理想的做法是後端有一個 PATCH /cart-items/{id}
-                // 由於目前不確定後端 API 結構，這裡我們先做一個簡單的頁面刷新
-                
-                // 模擬 API 呼叫 (替換成你實際的 Update API)
                 const response = await fetch('/customers/cart-items/create_or_update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formData
                 });
-
                 if (response.ok) {
-                    window.location.reload(); // 簡單暴力：刷新頁面重新計算價格
+                    window.location.reload();
                 } else {
                     alert('Failed to update quantity');
                 }
@@ -335,15 +359,11 @@
 
         async function removeItem(cartItemId) {
             if (!confirm('Are you sure you want to remove this item?')) return;
-
             try {
-                // 假設 DELETE API
-                const response = await fetch(`/customers/cart-items/${cartItemId}`, {
+                const response = await fetch('/customers/cart-items/${cartItemId}', {
                     method: 'DELETE'
                 });
-
                 if (response.ok) {
-                    // 移除 DOM 元素並重新計算 (或是簡單刷新)
                     window.location.reload();
                 } else {
                     const result = await response.json();
@@ -351,7 +371,6 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // Fallback for demo if API path is different
                 alert('Could not connect to server to delete item.');
             }
         }
