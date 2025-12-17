@@ -192,7 +192,7 @@ async def customer_homepage(
     )
 
 
-@router.get("/cart")
+@router.get("/carts")
 async def view_cart(
     request: Request,
     login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
@@ -237,6 +237,6 @@ async def view_cart(
     }
 
     return templates.TemplateResponse(
-        "/customer/cart.jinja", context=context, status_code=status.HTTP_200_OK
+        "/customer/carts.jinja", context=context, status_code=status.HTTP_200_OK
     )
     
