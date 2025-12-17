@@ -23,7 +23,10 @@ from app.db.operator.book import (
     search_books, 
     get_all_books, 
     get_all_categories, 
-    get_new_arrivals,
+    get_new_arrivals
+)
+
+from app.db.operator.bookbookstoremapping import(
     get_book_display_data,
     search_books_with_mappings,
     get_new_arrivals_with_mappings,

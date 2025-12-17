@@ -8,19 +8,7 @@ from app.db.models.book import Book
 from app.db.models.bookstore import Bookstore
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
-async def create_shopping_cart(
-    db: AsyncSession,
-    customer_account: str,
-    auto_commit: bool = False,
-):
-    query = insert(ShoppingCart).values(customer_account=customer_account).returning(ShoppingCart)
 
-    result = await db.execute(query)
-
-    if auto_commit:
-        await db.commit()
-
-    return result.scalar_one()
 
 async def get_cart_item_count(
     db: AsyncSession,
