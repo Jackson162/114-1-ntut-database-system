@@ -116,6 +116,8 @@ async def get_staff_orders(
 @router.get("/books")
 async def get_staff_books(
     request: Request,
+    create_book_succeeds: bool = False,
+    create_book_error: Optional[str] = None,
     login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -137,6 +139,8 @@ async def get_staff_books(
         "staff": staff,
         "books": book_dicts,
         "list_book_error": list_book_error,
+        "create_book_succeeds": create_book_succeeds,
+        "create_book_error": create_book_error,
     }
 
     return templates.TemplateResponse(

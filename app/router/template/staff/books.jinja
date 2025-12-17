@@ -23,6 +23,19 @@
             </div>
         {% endif %}
 
+        {% if create_book_error %}
+            <div class="alert alert-danger">
+                <p>Adding Book to Stock Fails!</p>
+                <p><strong>Error:</strong> {{ create_book_error }}</p>
+            </div>
+        {% endif %}
+
+        {% if create_book_succeeds %}
+            <div class="alert alert-danger">
+                <p>Adding Book to Stock Succeeds!</p>
+            </div>
+        {% endif %}
+
         {% if books %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 {% for book in books %}

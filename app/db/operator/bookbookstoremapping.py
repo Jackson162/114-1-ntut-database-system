@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update
+from sqlalchemy import select, and_, update, insert
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
@@ -27,3 +27,20 @@ async def decrease_stock(db: AsyncSession, mapping_id: UUID, quantity: int):
         .values(store_quantity=BookBookstoreMapping.store_quantity - quantity)
     )
     await db.execute(stmt)
+
+
+async def create_book_bookstore_mapping(
+    db: AsyncSession, book_id: UUID, bookstore_id: UUID, price: int, store_quantity: int
+):
+    query = (
+        insert(BookBookstoreMapping)
+        .values(
+            book_id=book_id, bookstore_id=bookstore_id, price=price, store_quantity=store_quantity
+        )
+        .returning(BookBookstoreMapping.book_bookstore_mapping_id)
+    )
+    await db.execute(query)
+
+    result = await db.execute(query)
+
+    return result.scalar_one()

@@ -1,5 +1,6 @@
 from typing import Tuple, Annotated
 from uuid import UUID
+from datetime import date
 
 from fastapi import APIRouter, Depends, Request, status, Form
 from fastapi.responses import RedirectResponse
@@ -13,6 +14,9 @@ from app.db.models.staff import Staff
 from app.db.operator.bookstore import create_bookstore
 from app.db.operator.staff import update_staff
 from app.db.operator.order import update_order
+from app.db.operator.book import create_book, get_book_by_isbn
+from app.db.operator.bookbookstoremapping import get_book_mapping, create_book_bookstore_mapping
+
 from app.util.auth import JwtPayload
 
 router = APIRouter()
@@ -75,4 +79,61 @@ async def update_staff_order(
     except Exception as err:
         await db.rollback()
         redirect_url = f"/frontend/staffs/orders?update_order_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/books/create", response_class=RedirectResponse)
+async def create_staff_book(
+    request: Request,
+    price: Annotated[int, Form()],
+    store_quantity: Annotated[int, Form()],
+    title: Annotated[str, Form()],
+    author: Annotated[str, Form()],
+    publisher: Annotated[str, Form()],
+    isbn: Annotated[str, Form()],
+    category: Annotated[str, Form()],
+    publish_date: Annotated[date, Form()],
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    try:
+        book = await get_book_by_isbn(db=db, isbn=isbn)
+
+        if book is None:
+            book = await create_book(
+                db=db,
+                title=title,
+                author=author,
+                publisher=publisher,
+                isbn=isbn,
+                category=category,
+                publish_date=publish_date,
+            )
+
+        mapping = await get_book_mapping(
+            db=db, book_id=book.book_id, bookstore_id=staff.bookstore_id
+        )
+
+        if mapping is not None:
+            raise Exception(
+                f"The book with isbn: {isbn} already exists in the bookstore: {staff.bookstore_id}."
+            )
+
+        mapping = await create_book_bookstore_mapping(
+            db=db,
+            book_id=book.book_id,
+            bookstore_id=staff.bookstore_id,
+            price=price,
+            store_quantity=store_quantity,
+        )
+
+        await db.commit()
+
+        redirect_url = "/frontend/staffs/books?create_book_succeeds=true"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        await db.rollback()
+        redirect_url = f"/frontend/staffs/books?create_book_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

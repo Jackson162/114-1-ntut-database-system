@@ -1,7 +1,9 @@
 from uuid import UUID
+from datetime import date
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, or_
 
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 from app.db.models.book import Book
@@ -29,6 +31,7 @@ async def list_books_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
     result = await db.execute(query)
     return list(result.all())
 
+
 async def get_all_categories(db: AsyncSession):
     stmt = select(Book.category).distinct()
     result = await db.execute(stmt)
@@ -36,11 +39,7 @@ async def get_all_categories(db: AsyncSession):
 
 
 async def get_new_arrivals(db: AsyncSession, limit: int = 5):
-    stmt = (
-        select(Book)
-        .order_by(Book.publish_date.desc())
-        .limit(limit)
-    )
+    stmt = select(Book).order_by(Book.publish_date.desc()).limit(limit)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -53,11 +52,38 @@ async def get_all_books(db: AsyncSession):
 
 async def search_books(db: AsyncSession, keyword: str):
     stmt = select(Book).where(
-        or_(
-            Book.title.ilike(f"%{keyword}%"),
-            Book.author.ilike(f"%{keyword}%")
-        )
+        or_(Book.title.ilike(f"%{keyword}%"), Book.author.ilike(f"%{keyword}%"))
     )
     result = await db.execute(stmt)
     return result.scalars().all()
-    
+
+
+async def get_book_by_isbn(db: AsyncSession, isbn: str):
+    query = select(Book).where(Book.isbn == isbn)
+    result = await db.execute(query)
+    return result.one_or_none()
+
+
+async def create_book(
+    db: AsyncSession,
+    title: str,
+    author: str,
+    publisher: str,
+    isbn: str,
+    category: str,
+    publish_date: date,
+):
+    values = {
+        "title": title,
+        "author": author,
+        "publisher": publisher,
+        "isbn": isbn,
+        "category": category,
+        "publish_date": publish_date,
+    }
+
+    query = insert(Book).values(values).returning(Book)
+
+    result = await db.execute(query)
+
+    return result.scalar_one()
