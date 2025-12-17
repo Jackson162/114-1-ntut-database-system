@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
 from uuid import UUID
 
+from sqlalchemy.orm import joinedload
 from app.db.models.coupon import Coupon
 
 
