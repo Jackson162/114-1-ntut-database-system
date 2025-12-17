@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, insert
+from sqlalchemy import select, and_, update, insert, delete
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
 
 
@@ -79,3 +79,18 @@ async def update_book_bookstore_mapping(
     result = await db.execute(query)
 
     return result.scalar_one()
+
+
+async def delete_book_bookstore_mapping(
+    db: AsyncSession,
+    book_bookstore_mapping_id: UUID,
+):
+    query = (
+        delete(BookBookstoreMapping)
+        .where(BookBookstoreMapping.book_bookstore_mapping_id == book_bookstore_mapping_id)
+        .returning(BookBookstoreMapping)
+    )
+
+    result = await db.execute(query)
+
+    return result.scalars().one()

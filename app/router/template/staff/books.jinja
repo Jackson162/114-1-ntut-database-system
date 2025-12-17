@@ -74,13 +74,36 @@
         {% endif %}
 
         {% if create_book_succeeds %}
-            <div class="alert alert-danger">
+            <div class="alert alert-success">
                 <p>Adding Book to Stock Succeeds!</p>
             </div>
         {% endif %}
 
+        {% if update_book_error %}
+            <div class="alert alert-danger">
+                <p>Updating Book Fails!</p>
+                <p><strong>Error:</strong> {{ create_book_error }}</p>
+            </div>
+        {% endif %}
 
+        {% if update_book_succeeds %}
+            <div class="alert alert-success">
+                <p>Updating Book Succeeds!</p>
+            </div>
+        {% endif %}
 
+        {% if delete_book_error %}
+            <div class="alert alert-danger">
+                <p>Deleting Book Fails!</p>
+                <p><strong>Error:</strong> {{ create_book_error }}</p>
+            </div>
+        {% endif %}
+
+        {% if delete_book_succeeds %}
+            <div class="alert alert-success">
+                <p>Deleting Book Succeeds!</p>
+            </div>
+        {% endif %}
 
         {% if books %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -109,6 +132,12 @@
                                     </div>
                                     <div class="col-2">
                                         <button type="submit" class="btn btn-primary btn-sm">update book</button>
+                                    </div>
+                                </form>
+                                <br>
+                                <form action="/staffs/book_bookstore_mappings/{{book.book_bookstore_mapping_id}}/delete" method="post" class="row g-2 align-items-end">
+                                      <div class="col-2">
+                                        <button type="submit" class="btn btn-danger btn-sm">delete book</button>
                                     </div>
                                 </form>
                             </div>

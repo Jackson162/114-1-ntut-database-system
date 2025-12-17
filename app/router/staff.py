@@ -20,6 +20,7 @@ from app.db.operator.bookbookstoremapping import (
     create_book_bookstore_mapping,
     get_book_mapping_by_mapping_id,
     update_book_bookstore_mapping,
+    delete_book_bookstore_mapping,
 )
 
 from app.util.auth import JwtPayload
@@ -185,10 +186,44 @@ async def update_staff_book_mapping(
 
         await db.commit()
 
-        redirect_url = "/frontend/staffs/books?create_book_succeeds=true"
+        redirect_url = "/frontend/staffs/books?update_book_succeeds=true"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     except Exception as err:
         await db.rollback()
         logger.error(err)
-        redirect_url = f"/frontend/staffs/books?create_book_error={repr(err)}"
+        redirect_url = f"/frontend/staffs/books?update_book_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post(
+    "/book_bookstore_mappings/{book_bookstore_mapping_id}/delete", response_class=RedirectResponse
+)
+async def delete_staff_book_mapping(
+    request: Request,
+    book_bookstore_mapping_id: UUID,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+
+    try:
+        mapping = await get_book_mapping_by_mapping_id(
+            db=db, book_bookstore_mapping_id=book_bookstore_mapping_id
+        )
+
+        if mapping is None:
+            raise Exception("The book does not exist in this bookstore")
+
+        mapping = await delete_book_bookstore_mapping(
+            db=db,
+            book_bookstore_mapping_id=book_bookstore_mapping_id,
+        )
+
+        await db.commit()
+
+        redirect_url = "/frontend/staffs/books?delete_book_succeeds=true"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        await db.rollback()
+        logger.error(err)
+        redirect_url = f"/frontend/staffs/books?delete_book_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
