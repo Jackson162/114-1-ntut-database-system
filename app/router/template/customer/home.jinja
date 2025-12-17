@@ -32,11 +32,50 @@
             color: #4CAF50;
             text-decoration: none;
         }
-        .search-bar {
+        /* Modified Search Container Styles */
+        .search-container {
             width: 40%;
+            display: flex;
+            align-items: stretch; /* Ensure all children have same height */
+        }
+        .search-bar {
+            flex-grow: 1;
             padding: 8px 15px;
             border: 1px solid #ccc;
-            border-radius: 20px;
+            border-right: none; /* Merge visually with next element */
+            border-radius: 20px 0 0 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        /* Clear Button Styles */
+        .clear-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            color: #999;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .clear-btn:hover {
+            color: #555;
+            background-color: #f9f9f9;
+        }
+
+        .search-btn {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-left: none; /* Merge visually */
+            border-radius: 0 20px 20px 0;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
             font-size: 14px;
         }
         .nav-icons a {
@@ -71,6 +110,8 @@
             padding-bottom: 5px;
             margin-top: 30px;
         }
+
+        /* --- Styles for Home Recommendations (Scroll) --- */
         .books-scroll-wrapper {
             display: flex;
             overflow-x: auto; 
@@ -83,23 +124,46 @@
             display: none; /* Chrome, Safari, Opera*/
         }
 
+        /* --- Styles for Search Results (Grid) --- */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            padding-bottom: 15px;
+        }
+        .no-results {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+            font-size: 18px;
+        }
+
+        /* --- Shared Book Card Styles (Inline if needed, but assuming separate file exists) --- */
+        /* If book_card.jinja relies on external CSS, ensure it's here. 
+           Currently book_card styles seem to be in home.jinja mostly. */
         .book-card {
-            flex: 0 0 180px; 
+            flex: 0 0 180px; /* Relevant for scroll wrapper */
             background-color: white;
             border-radius: 6px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             padding: 10px;
             text-align: center;
             transition: transform 0.2s;
+            /* For grid, width is handled by grid-template-columns */
         }
+        /* Override flex for grid items to fill space */
+        .books-grid .book-card {
+            flex: auto;
+        }
+
         .book-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .book-card img {
             width: 100%;
-            height: 120px; 
-            object-fit: cover;
+            height: 180; 
+            object-fit: contain;
             border-radius: 4px;
             margin-bottom: 8px;
         }
@@ -136,49 +200,105 @@
             cursor: pointer;
             font-size: 13px;
         }
+		
+    /* 新增書店區塊樣式 */
+        .bookstore-block {
+            margin-bottom: 30px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .bookstore-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .bookstore-name::before {
+            content: '🏪';
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
 
     <div class="sticky-bar">
-        <a href="/home" class="logo-home">Bookstore</a>
-        
-        <input type="text" class="search-bar" placeholder="全站搜尋...">
-        
+        <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
+        <form class="search-container" action="/frontend/customers/home" method="get">
+            <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
+            {% if q %}
+              <a href="/frontend/customers/home" class="clear-btn" title="Clear Search">✕</a>
+            {% endif %}
+            <button type="submit" class="search-btn">Search</button>
+        </form>
         <div class="nav-icons">
-            <a href="/customers/cart">
-                購物車
-                <span>{{ cart_count or 0 }}</span>
-            </a>
-            {# 訂單入口 (跳轉至 /customers/orders) #}
-            <a href="/customers/orders">訂單</a>
-            {# 個人頁面 (跳轉至 /customers/profile) #}
-            <a href="/customers/profile">個人頁面</a>
+            <a href="/frontend/customers/carts">購物車<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders">訂單</a>
+            <a href="/frontend/customers/profile">個人頁面</a>
         </div>
     </div>
 
     <div class="content-container">
         
-        <h2 class="section-title">🔥 熱門推薦 (Bestsellers)</h2>
-        <div class="books-scroll-wrapper">
-            {% for book in bestsellers %}
-                {% include 'customer/book_card.jinja' %}
-            {% endfor %}
-        </div>
-        
-        <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
-        <div class="books-scroll-wrapper">
-            {% for book in new_arrivals %}
-                {% include 'customer/book_card.jinja' %}
-            {% endfor %}
-        </div>
+        {% if q %}
+            <h2 class="section-title">搜尋結果: "{{ q }}"</h2>
+            
+            {% if grouped_books %}
+                {% for store_name, books in grouped_books.items() %}
+                    <div class="bookstore-block">
+                        <div class="bookstore-name">{{ store_name }}</div>
+                        <div class="books-grid">
+                            {% for book in books %}
+                                {% include 'customer/book_card.jinja' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">找不到相關書籍。</div>
+            {% endif %}
 
-        <h2 class="section-title">🏷️ 促銷中 (On Sale)</h2>
-        <div class="books-scroll-wrapper">
-            {% for book in promotions %}
-                {% include 'customer/book_card.jinja' %}
-            {% endfor %}
-        </div>
+        {% else %}
+            {% if bestsellers %}
+            <h2 class="section-title">🔥 熱門推薦 (Bestsellers)</h2>
+            <div class="books-scroll-wrapper">
+                {% for book in bestsellers %}
+                    {% include 'customer/book_card.jinja' %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        
+            <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
+            
+            {% if grouped_new_arrivals %}
+                {% for store_name, books in grouped_new_arrivals.items() %}
+                    <div class="bookstore-block">
+                        <div class="bookstore-name">{{ store_name }}</div>
+                        <div class="books-scroll-wrapper">
+                            {% for book in books %}
+                                {% include 'customer/book_card.jinja' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:#999; margin-left:10px;">暫無新書</p>
+            {% endif %}
+
+            {% if promotions %}
+            <h2 class="section-title">🏷️ 促銷中 (On Sale)</h2>
+            <div class="books-scroll-wrapper">
+                {% for book in promotions %}
+                    {% include 'customer/book_card.jinja' %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+        {% endif %}
+
     </div>
 
     <script>
@@ -187,25 +307,30 @@
                 button.addEventListener('click', async (event) => {
                     const bookId = event.target.dataset.bookId;
                     const minPrice = event.target.dataset.minPrice;
-                    
-                    try {
-                        const response = await fetch('/customers/cart-items', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                book_id: bookId,
-                                price: minPrice,
-                                book_bookstore_mapping_id: bookId, 
-                                quantity: 1
-                            })
-                        });
+                    const bookstoreId = event.target.dataset.bookstoreId; 
+               
+                    if (!bookstoreId || bookstoreId === 'None' || bookstoreId === 'null') {
+                        alert('此商品目前無法購買（無供應商資訊）。');
+                        return;
+                    }
 
+                    try {
+                        const formData = new URLSearchParams();
+                        formData.append('book_id', bookId);
+                        formData.append('bookstore_id', bookstoreId); 
+                        formData.append('quantity', 1);
+
+                        const response = await fetch('/customers/cart-items/create_or_update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: formData 
+                        });
                         if (response.ok) {
                             alert('商品已加入購物車！');
+                            window.location.reload(); 
                         } else {
-                            alert('加入購物車失敗，請稍後再試。');
+                            const result = await response.json();
+                            alert('加入購物車失敗: ' + (result.error || '未知錯誤'));
                         }
                     } catch (error) {
                         console.error('API 錯誤:', error);

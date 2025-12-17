@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, or_
 
 from app.db.models.book_bookstore_mapping import BookBookstoreMapping
+from app.db.models.bookstore import Bookstore
 from app.db.models.book import Book
-
 
 async def list_books_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
     query = (
@@ -56,6 +56,7 @@ async def search_books(db: AsyncSession, keyword: str):
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+    
 
 
 async def get_book_by_isbn(db: AsyncSession, isbn: str):
@@ -87,3 +88,4 @@ async def create_book(
     result = await db.execute(query)
 
     return result.scalars().one()
+

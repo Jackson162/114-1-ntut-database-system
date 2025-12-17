@@ -15,6 +15,11 @@
 
     <form method="post" action="/frontend/customers/orders/create">
         
+        <input type="hidden" name="bookstore_id" value="{{ bookstore_id or '' }}">
+        
+        <label for="coupon_id">Coupon ID (Optional):</label><br>
+        <input type="text" id="coupon_id" name="coupon_id" value=""><br><br>
+
         <label for="recipient_name">recipient_name:</label><br>
         <input type="text" id="recipient_name" name="recipient_name" value="{{ recipient_name or '' }}" required><br><br>
 
