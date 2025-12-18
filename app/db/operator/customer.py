@@ -42,3 +42,9 @@ async def create_customer(
 
     if auto_commit:
         await db.commit()
+
+async def get_all_customers(db: AsyncSession) -> list[Customer]:
+    """取得所有使用者列表"""
+    query = select(Customer).order_by(Customer.account)
+    result = await db.execute(query)
+    return result.scalars().all()

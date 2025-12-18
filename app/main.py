@@ -5,7 +5,7 @@ from fastapi.responses import PlainTextResponse
 from starlette import status
 from app.core.config import settings
 from app.db.init_db import init_db
-from app.router import auth, staff, customer
+from app.router import auth, staff, customer, admin
 from app.router.frontend import frontend
 
 
@@ -27,6 +27,7 @@ app.include_router(frontend.router, prefix="/frontend", tags=["frontend"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(staff.router, prefix="/staffs", tags=["staffs"])
 app.include_router(customer.router, prefix="/customers", tags=["customers"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 
 @app.exception_handler(Exception)

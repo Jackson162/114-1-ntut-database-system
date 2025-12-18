@@ -28,3 +28,4 @@ class Customer(Base):
     address: Mapped[Optional[str]] = mapped_column(Text)
 
     orders: Mapped[List["Order"]] = relationship(back_populates="customer")
+    

@@ -1,0 +1,11 @@
+{% extends "admin/base.jinja" %}
+
+{% block content %}
+<div class="card">
+    <h2>管理員資料</h2>
+    <div style="line-height: 2;">
+        <p><strong>管理員帳號：</strong> {{ admin.account }}</p>
+        <p><strong>管理員 ID：</strong> {{ admin.account }}</p> <p><strong>管理員姓名：</strong> {{ admin.name }}</p>
+    </div>
+</div>
+{% endblock %}
