@@ -21,6 +21,7 @@ from app.router.schema.sqlalchemy import (
     OrderSchema,
     OrderItemSchema,
     BookSchema,
+    CouponSchema,
     BookWithMappingInfo,
 )
 from app.logging.logger import get_logger
@@ -171,7 +172,7 @@ async def get_staff_coupons(
     staff_accounts = [staff.account for staff in staffs]
 
     coupons = await get_coupon_by_accounts(db=db, accounts=staff_accounts, role=UserRole.STAFF)
-    coupon_dicts = [coupon.dict() for coupon in coupons]
+    coupon_dicts = [CouponSchema.from_orm(coupon).dict() for coupon in coupons]
 
     context = {
         "request": request,
