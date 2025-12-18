@@ -229,3 +229,37 @@ async def delete_staff_book_mapping(
         logger.error(err)
         redirect_url = f"/frontend/staffs/books?delete_book_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/coupons/create", response_class=RedirectResponse)
+async def create_staff_coupon(
+    request: Request,
+    name: str,
+    type: CouponType,
+    discount_percentage: float,
+    start_date: date,
+    end_date: Optional[date],
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    try:
+        await create_coupon(
+            db=db,
+            account=staff.account,
+            name=name,
+            type=type,
+            discount_percentage=discount_percentage,
+            start_date=start_date,
+            end_date=end_date,
+            role=UserRole.STAFF,
+        )
+        await db.commit()
+        redirect_url = "/frontend/staffs/coupons"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        logger.error(err)
+        await db.rollback()
+        redirect_url = f"/frontend/staffs/coupons?create_coupon_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
