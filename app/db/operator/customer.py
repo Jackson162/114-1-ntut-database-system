@@ -2,7 +2,7 @@ from typing import Optional
 from app.db.models.customer import Customer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete 
 
 
 async def get_customer_by_account(db: AsyncSession, account: str):
@@ -56,5 +56,11 @@ async def update_customer_info(db: AsyncSession, account: str, name: str, email:
         .where(Customer.account == account)
         .values(name=name, email=email)
     )
+    await db.execute(query)
+    await db.commit()
+
+async def delete_customer(db: AsyncSession, account: str):
+    """刪除使用者"""
+    query = delete(Customer).where(Customer.account == account)
     await db.execute(query)
     await db.commit()

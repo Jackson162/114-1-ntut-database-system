@@ -10,6 +10,7 @@ from app.enum.user import UserRole
 from app.util.auth import JwtPayload
 from app.db.models.admin import Admin
 from app.db.operator.customer import get_all_customers#, update_customer_status, update_customer_info
+from app.db.operator.staff import get_all_staffs
 
 router = APIRouter()
 
@@ -34,15 +35,17 @@ async def user_management(
     db: AsyncSession = Depends(get_db_session),
     user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
 ):
-    """使用者帳號管理頁面"""
+    """使用者與員工帳號管理頁面"""
     _, admin = user_data
     customers = await get_all_customers(db)
+    staffs = await get_all_staffs(db) 
     return templates.TemplateResponse(
         "admin/users.jinja",
         {
             "request": request,
             "admin": admin,
             "customers": customers,
+            "staffs": staffs, 
             "active_page": "users"
         }
     )

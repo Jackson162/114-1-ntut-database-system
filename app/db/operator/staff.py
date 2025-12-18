@@ -3,7 +3,7 @@ from uuid import UUID
 from app.db.models.staff import Staff
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 
 async def get_staff_by_account(db: AsyncSession, account: str):
@@ -71,3 +71,9 @@ async def get_staffs_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
     query = select(Staff).where(Staff.bookstore_id == bookstore_id)
     result = await db.execute(query)
     return result.scalars().all()
+
+async def delete_staff(db: AsyncSession, account: str):
+    """刪除員工"""
+    query = delete(Staff).where(Staff.account == account)
+    await db.execute(query)
+    await db.commit()

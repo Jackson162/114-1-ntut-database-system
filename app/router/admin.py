@@ -9,12 +9,57 @@ from app.middleware.depends import validate_token_by_role
 from app.enum.user import UserRole
 from app.util.auth import JwtPayload
 from app.db.models.admin import Admin
-from app.db.operator.customer import get_all_customers, update_customer_info
+from app.db.operator.customer import get_all_customers, update_customer_info, delete_customer
+from app.db.operator.staff import delete_staff
 
 router = APIRouter()
 
 AdminDep = Tuple[JwtPayload, Admin]
 
+@router.put("/users/{account}")
+async def edit_user_info(
+    account: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db_session),
+    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
+):
+    """編輯使用者資料"""
+    try:
+        data = await request.json()
+        name = data.get("name")
+        email = data.get("email")
+        
+        await update_customer_info(db, account, name, email)
+        return {"message": "User info updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/users/{account}")
+async def remove_customer(
+    account: str,
+    db: AsyncSession = Depends(get_db_session),
+    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
+):
+    """刪除 Customer"""
+    try:
+        await delete_customer(db, account)
+        return {"message": "Customer deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/staffs/{account}")
+async def remove_staff(
+    account: str,
+    db: AsyncSession = Depends(get_db_session),
+    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
+):
+    """刪除 Staff"""
+    try:
+        await delete_staff(db, account)
+        return {"message": "Staff deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
 #@router.patch("/users/{account}/status")
 #async def toggle_user_status(
 #    account: str,
@@ -34,20 +79,3 @@ AdminDep = Tuple[JwtPayload, Admin]
 #    except Exception as e:
 #        raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/users/{account}")
-async def edit_user_info(
-    account: str,
-    request: Request,
-    db: AsyncSession = Depends(get_db_session),
-    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
-):
-    """編輯使用者資料"""
-    try:
-        data = await request.json()
-        name = data.get("name")
-        email = data.get("email")
-        
-        await update_customer_info(db, account, name, email)
-        return {"message": "User info updated"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

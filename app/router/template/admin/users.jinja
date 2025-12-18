@@ -2,14 +2,12 @@
 
 {% block extra_head %}
 <style>
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 40px; }
     th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
     th { background-color: #f8f9fa; }
-    .status-active { color: green; font-weight: bold; }
-    .status-inactive { color: red; font-weight: bold; }
     .btn { padding: 6px 12px; cursor: pointer; border-radius: 4px; border: none; font-size: 14px; margin-right: 5px; }
     .btn-edit { background-color: #ffc107; color: #000; }
-    .btn-toggle { background-color: #17a2b8; color: white; }
+    .btn-delete { background-color: #dc3545; color: white; }
     
     /* Modal Styles */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
@@ -17,19 +15,21 @@
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
+    
+    h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+    .section-title { margin-top: 30px; color: #333; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card">
-    <h2>使用者帳號管理</h2>
+    <h2 class="section-title">一般使用者 (Customers)</h2>
     <table>
         <thead>
             <tr>
-                <th>使用者帳號 (ID)</th>
-                <th>使用者姓名</th>
-                <th>電子信箱</th>
-                <th>帳號狀態</th>
+                <th>帳號 (Account)</th>
+                <th>姓名 (Name)</th>
+                <th>電子信箱 (Email)</th>
                 <th>管理操作</th>
             </tr>
         </thead>
@@ -40,17 +40,32 @@
                 <td>{{ user.name }}</td>
                 <td>{{ user.email or '-' }}</td>
                 <td>
-                    {% if user.is_active %}
-                    <span class="status-active">啟用</span>
-                    {% else %}
-                    <span class="status-inactive">停用</span>
-                    {% endif %}
-                </td>
-                <td>
                     <button class="btn btn-edit" onclick="openEditModal('{{ user.account }}', '{{ user.name }}', '{{ user.email or '' }}')">編輯</button>
-                    <button class="btn btn-toggle" onclick="toggleStatus('{{ user.account }}', {{ 'true' if user.is_active else 'false' }})">
-                        {{ '停用' if user.is_active else '啟用' }}
-                    </button>
+                    <button class="btn btn-delete" onclick="deleteUser('{{ user.account }}', 'customer')">刪除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 class="section-title">員工 (Staffs)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>帳號 (Account)</th>
+                <th>姓名 (Name)</th>
+                <th>所屬書店 (Bookstore ID)</th>
+                <th>管理操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staffs %}
+            <tr>
+                <td>{{ staff.account }}</td>
+                <td>{{ staff.name }}</td>
+                <td>{{ staff.bookstore_id or '無' }}</td>
+                <td>
+                    <button class="btn btn-delete" onclick="deleteUser('{{ staff.account }}', 'staff')">刪除</button>
                 </td>
             </tr>
             {% endfor %}
@@ -80,22 +95,24 @@
 
 {% block scripts %}
 <script>
-    async function toggleStatus(account, currentStatus) {
-        if (!confirm('確定要' + (currentStatus ? '停用' : '啟用') + '此帳號嗎？')) return;
+    async function deleteUser(account, type) {
+        const typeName = type === 'customer' ? '使用者' : '員工';
+        if (!confirm(`確定要刪除此${typeName} (${account}) 嗎？此操作無法復原。`)) return;
+        
+        const endpoint = type === 'customer' ? `/admin/users/${account}` : `/admin/staffs/${account}`;
         
         try {
-            const res = await fetch(`/admin/users/${account}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_active: !currentStatus })
+            const res = await fetch(endpoint, {
+                method: 'DELETE',
             });
             if (res.ok) {
                 location.reload();
             } else {
-                alert('操作失敗');
+                alert('刪除失敗');
             }
         } catch (e) {
-            alert('Error');
+            console.error(e);
+            alert('發生錯誤');
         }
     }
 
