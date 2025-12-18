@@ -23,7 +23,7 @@ from app.db.operator.bookbookstoremapping import (
     update_book_bookstore_mapping,
     delete_book_bookstore_mapping,
 )
-from app.db.operator.coupon import create_coupon
+from app.db.operator.coupon import create_coupon, delete_coupon
 from app.util.auth import JwtPayload
 from app.logging.logger import get_logger
 
@@ -232,14 +232,36 @@ async def delete_staff_book_mapping(
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
+@router.post("/coupons/{coupon_id}/delete", response_class=RedirectResponse)
+async def delete_staff_coupon(
+    request: Request,
+    coupon_id: UUID,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    try:
+        deleted_coupon = await delete_coupon(db=db, coupon_id=coupon_id)
+        if deleted_coupon is None:
+            raise Exception(f"Coupon with ID {coupon_id} not found.")
+
+        await db.commit()
+        redirect_url = "/frontend/staffs/coupons?delete_coupon_succeeds=true"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        logger.error(err)
+        await db.rollback()
+        redirect_url = f"/frontend/staffs/coupons?delete_coupon_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.post("/coupons/create", response_class=RedirectResponse)
 async def create_staff_coupon(
     request: Request,
-    name: str,
-    type: CouponType,
-    discount_percentage: float,
-    start_date: date,
-    end_date: Optional[date],
+    name: Annotated[str, Form()],
+    type: Annotated[CouponType, Form()],
+    discount_percentage: Annotated[float, Form()],
+    start_date: Annotated[date, Form()],
+    end_date: Annotated[Optional[date], Form()] = None,
     login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
     db: AsyncSession = Depends(get_db_session),
 ):

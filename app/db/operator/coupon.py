@@ -3,7 +3,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, delete
 from sqlalchemy.orm import joinedload
 from app.db.models.coupon import Coupon
 from app.enum.coupon import CouponType
@@ -47,10 +47,26 @@ async def create_coupon(
 
 async def get_coupon_by_accounts(db: AsyncSession, accounts: List[str], role: UserRole):
 
-    query = select(Coupon).where(Coupon.admin_account.in_(accounts))
-
-    if role == UserRole.STAFF.value:
-        query = select(Coupon).where(Coupon.staff_account.in_(accounts))
+    if role == UserRole.ADMIN:
+        query = (
+            select(Coupon)
+            .where(Coupon.admin_account.in_(accounts))
+            .options(joinedload(Coupon.admin))
+        )
+    elif role == UserRole.STAFF:
+        query = (
+            select(Coupon)
+            .where(Coupon.staff_account.in_(accounts))
+            .options(joinedload(Coupon.staff))
+        )
+    else:
+        return []
 
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def delete_coupon(db: AsyncSession, coupon_id: UUID):
+    query = delete(Coupon).where(Coupon.coupon_id == coupon_id).returning(Coupon)
+    result = await db.execute(query)
+    return result.scalars().one_or_none()
