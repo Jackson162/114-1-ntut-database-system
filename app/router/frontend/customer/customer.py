@@ -244,14 +244,21 @@ async def view_cart(
 async def customer_profile_page(
     request: Request,
     login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
 ):
     _, customer = login_data
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except:
+        pass
 
     context = {
         "request": request,
         "customer": customer,
-        "cart_count": 0,   
-        "page": "profile", 
+        "cart_count": cart_count,
+        "page": "profile",
     }
 
     return templates.TemplateResponse(
@@ -259,6 +266,7 @@ async def customer_profile_page(
         context=context,
         status_code=status.HTTP_200_OK,
     )
+
 @router.post("/profile/update")
 async def update_customer_profile(
     name: Annotated[str, Form()],
@@ -291,14 +299,21 @@ async def customer_coupons_page(
     admin_coupons = await get_active_admin_coupons(db)
     bookstore_coupons = await get_active_bookstore_coupons(db)
 
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except:
+        pass
+
     context = {
         "request": request,
         "customer": customer,
-        "cart_count": 0,
+        "cart_count": cart_count,
         "page": "coupons",
         "admin_coupons": admin_coupons,
         "bookstore_coupons": bookstore_coupons,
     }
+
 
     return templates.TemplateResponse(
         "/customer/profile.jinja",
