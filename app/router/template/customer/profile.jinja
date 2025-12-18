@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 60px;
+            background-color: #f4f7f6;
+        }
+
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .home-icon {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .search-bar {
+            width: 40%;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+        }
+        .nav-icons a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: #333;
+            position: relative;
+        }
+        .nav-icons span {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            position: absolute;
+            top: -8px;
+            right: -10px;
+        }
+
+        .page-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 20px;
+            margin-right: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f4f7f6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sticky-bar">
+    <a href="/home" class="home-icon">🏠 Bookstore</a>
+
+    <input type="text" class="search-bar" placeholder="全站搜尋...">
+
+    <div class="nav-icons">
+        <a href="/frontend/customers/cart">
+            購物車
+            <span>{{ cart_count or 0 }}</span>
+        </a>
+        <a href="/frontend/customers/orders">訂單</a>
+        <a href="/frontend/customers/profile">個人頁面</a>
+    </div>
+</div>
+
+<div class="page-container">
+
+    <div class="sidebar">
+        <a href="/frontend/customers/profile" class="{% if page == 'profile' %}active{% endif %}">個人資料</a>
+        <a href="/frontend/customers/coupons" class="{% if page == 'coupons' %}active{% endif %}">我的優惠券</a>
+        <a href="/frontend/customers/profile/password">修改密碼</a>
+        <a href="/frontend/customers/logout">登出</a>
+    </div>
+
+    <div class="main-content">
+
+        {% if page == 'profile' %}
+        <h2 class="section-title">個人資料</h2>
+
+        <form method="post" action="/frontend/customers/profile/update">
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" name="name" value="{{ customer.name }}">
+            </div>
+
+            <div class="form-group">
+                <label>電子信箱</label>
+                <input type="email" name="email" value="{{ customer.email }}">
+            </div>
+
+            <div class="form-group">
+                <label>聯絡電話</label>
+                <input type="text" name="phone" value="{{ customer.phone }}">
+            </div>
+
+            <button type="submit" class="save-btn">儲存</button>
+        </form>
+        {% endif %}
+
+        {% if page == 'coupons' %}
+        <h2 class="section-title">我的優惠券</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>優惠券名稱</th>
+                    <th>折扣</th>
+                    <th>使用期限</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in admin_coupons %}
+                <tr>
+                    <td>{{ coupon.name }}（平台）</td>
+                    <td>{{ coupon.discount_percentage }}%</td>
+                    <td>
+                        {% if coupon.end_date %}
+                            {{ coupon.end_date }}
+                        {% else %}
+                            無期限
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                {% for coupon in bookstore_coupons %}
+                <tr>
+                    <td>
+                        {{ coupon.type }}
+                        {% if coupon.staff %}
+                            （{{ coupon.staff.bookstore.name }}）
+                        {% endif %}
+                    </td>
+                    <td>{{ coupon.discount_percentage }}%</td>
+                    <td>
+                        {% if coupon.end_date %}
+                            {{ coupon.end_date }}
+                        {% else %}
+                            無期限
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>

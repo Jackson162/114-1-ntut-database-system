@@ -300,4 +300,4 @@ async def checkout_page(
     return templates.TemplateResponse(
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
-    
+
