@@ -7,10 +7,14 @@ from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.enum.order import OrderStatus
+from app.enum.coupon import CouponType
 from app.db.models.staff import Staff
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.db.operator.order import get_orders_by_bookstore_id
 from app.db.operator.book import list_books_by_bookstore_id
+from app.db.operator.staff import get_staffs_by_bookstore_id
+from app.db.operator.coupon import get_coupon_by_accounts
+
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
 from app.router.schema.sqlalchemy import (
@@ -18,7 +22,9 @@ from app.router.schema.sqlalchemy import (
     OrderSchema,
     OrderItemSchema,
     BookSchema,
+    CouponSchema,
     BookWithMappingInfo,
+    StaffSchema,
 )
 from app.logging.logger import get_logger
 
@@ -153,4 +159,51 @@ async def get_staff_books(
 
     return templates.TemplateResponse(
         "/staff/books.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/coupons")
+async def get_staff_coupons(
+    request: Request,
+    create_coupon_error: Optional[str] = None,
+    delete_coupon_succeeds: bool = False,
+    delete_coupon_error: Optional[str] = None,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    list_coupon_error = None
+    coupon_dicts = []
+    try:
+        staffs = await get_staffs_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
+        staff_accounts = [s.account for s in staffs]
+
+        coupons = await get_coupon_by_accounts(db=db, accounts=staff_accounts, role=UserRole.STAFF)
+        coupon_dicts = []
+
+        for c in coupons:
+            coupon_dict = CouponSchema.from_orm(c).dict()
+
+            if c.staff:
+                coupon_dict["staff"] = StaffSchema.from_orm(c.staff).dict()
+
+            coupon_dicts.append(coupon_dict)
+
+    except Exception as err:
+        logger.error(err)
+        list_coupon_error = repr(err)
+
+    context = {
+        "request": request,
+        "coupons": coupon_dicts,
+        "create_coupon_error": create_coupon_error,
+        "delete_coupon_succeeds": delete_coupon_succeeds,
+        "delete_coupon_error": delete_coupon_error,
+        "coupon_types": [ct.value for ct in CouponType],
+        "list_coupon_error": list_coupon_error,
+    }
+
+    return templates.TemplateResponse(
+        "/staff/coupons.jinja", context=context, status_code=status.HTTP_200_OK
     )

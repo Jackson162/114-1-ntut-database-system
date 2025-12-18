@@ -10,6 +10,7 @@ from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.enum.order import OrderStatus
+from app.enum.coupon import CouponType
 from app.db.models.staff import Staff
 from app.db.operator.bookstore import create_bookstore
 from app.db.operator.staff import update_staff
@@ -22,7 +23,7 @@ from app.db.operator.bookbookstoremapping import (
     update_book_bookstore_mapping,
     delete_book_bookstore_mapping,
 )
-
+from app.db.operator.coupon import create_coupon, delete_coupon
 from app.util.auth import JwtPayload
 from app.logging.logger import get_logger
 
@@ -228,4 +229,60 @@ async def delete_staff_book_mapping(
         await db.rollback()
         logger.error(err)
         redirect_url = f"/frontend/staffs/books?delete_book_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/coupons/{coupon_id}/delete", response_class=RedirectResponse)
+async def delete_staff_coupon(
+    request: Request,
+    coupon_id: UUID,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    try:
+        deleted_coupon = await delete_coupon(db=db, coupon_id=coupon_id)
+        if deleted_coupon is None:
+            raise Exception(f"Coupon with ID {coupon_id} not found.")
+
+        await db.commit()
+        redirect_url = "/frontend/staffs/coupons?delete_coupon_succeeds=true"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        logger.error(err)
+        await db.rollback()
+        redirect_url = f"/frontend/staffs/coupons?delete_coupon_error={repr(err)}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/coupons/create", response_class=RedirectResponse)
+async def create_staff_coupon(
+    request: Request,
+    name: Annotated[str, Form()],
+    type: Annotated[CouponType, Form()],
+    discount_percentage: Annotated[float, Form()],
+    start_date: Annotated[date, Form()],
+    end_date: Annotated[Optional[date], Form()] = None,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    try:
+        await create_coupon(
+            db=db,
+            account=staff.account,
+            name=name,
+            type=type,
+            discount_percentage=discount_percentage,
+            start_date=start_date,
+            end_date=end_date,
+            role=UserRole.STAFF,
+        )
+        await db.commit()
+        redirect_url = "/frontend/staffs/coupons"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as err:
+        logger.error(err)
+        await db.rollback()
+        redirect_url = f"/frontend/staffs/coupons?create_coupon_error={repr(err)}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
