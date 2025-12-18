@@ -2,17 +2,24 @@
 <div class="book-card">
     
     {# 封面圖 (點擊跳轉至 /book/:book_id) #}
-    <a href="/book/{{ book.book_id }}">
-        <img src="{{ url_for('static', path='/book.png') }}" alt="{{ book.title }}">
+    <a href="/frontend/customers/book/{{ book.book_id }}">
+        <img src="{{ book.image_url }}" alt="{{ book.title }}">
     </a>
     
     {# 書名 (點擊跳轉至 /book/:book_id) #}
-    <a href="/book/{{ book.book_id }}" class="book-title">{{ book.title }}</a>
+    <div class="book-title">
+        <a href="/frontend/customers/book/{{ book.book_id }}">
+            {{ book.title }}
+        </a>
+    </div>
 	
     <br>
 
     {# 作者 #}
-    <span class="book-author">{{ book.author }}</span>
+    <a href="/frontend/customers/author/{{ book.author_name | urlencode }}?bookstore_id={{ book.bookstore_id }}">
+        {{ book.author_name }}
+    </a>
+
     
     {# 價格 #}
     <div class="book-price">NT$ {{ book.min_price }}</div>

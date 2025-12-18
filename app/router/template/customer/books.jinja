@@ -1,23 +1,20 @@
-/* 功能移至home */
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Search Books</title>
+    <title>{{ book.title if book else '書籍詳情' }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
             margin: 0;
-            padding-top: 60px; 
+            padding-top: 80px; 
             background-color: #f4f7f6;
-            min-height: 100vh;
+            color: #333;
         }
 
+        /* 固定導航列 - 保持同學的原有樣式 */
         .sticky-bar {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
+            top: 0; left: 0; width: 100%; height: 60px;
             background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
@@ -27,168 +24,190 @@
             box-sizing: border-box;
             z-index: 1000;
         }
-        .logo-home {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        
-        /* Modified Search Container Styles */
-        .search-container {
-            width: 40%;
-            display: flex;
-            align-items: stretch; /* Ensure all children have same height */
-        }
-        .search-bar {
-            flex-grow: 1;
-            padding: 8px 15px;
-            border: 1px solid #ccc;
-            border-right: none; /* Merge visually with next element */
-            border-radius: 20px 0 0 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        /* Clear Button Styles */
-        .clear-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 10px;
-            background-color: white;
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            color: #999;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .clear-btn:hover {
-            color: #555;
-            background-color: #f9f9f9;
+        .logo-home { font-size: 24px; font-weight: bold; color: #4CAF50; text-decoration: none; }
+        .search-bar { width: 40%; padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; font-size: 14px; }
+        .nav-icons a { margin-left: 15px; color: #333; text-decoration: none; font-size: 14px; position: relative; }
+        .nav-icons span { background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: -10px; right: -10px; }
+
+        /* 主要內容容器 */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .search-btn {
-            padding: 8px 15px;
-            border: 1px solid #ccc;
-            border-left: none; /* Merge visually */
-            border-radius: 0 20px 20px 0;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
+        /* 商品基本資訊區 */
+        .book-detail-section {
+            display: flex;
+            gap: 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        /* Fix border radius if clear button is NOT present (handled via CSS sibling selector or inline logic if needed, 
-           but easiest is to keep structure consistent or rely on flex behavior) */
-        
-        .nav-icons a {
-            margin-left: 15px;
-            color: #333;
-            text-decoration: none;
-            font-size: 14px;
-            position: relative;
-        }
-        .nav-icons span { 
-            background-color: red;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 10px;
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            line-height: 1;
-        }
-        
-        .content-container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-        }
-        .section-title {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 22px;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 5px;
-            margin-top: 30px;
-        }
-        .books-grid {
+
+        .book-cover { flex: 0 0 350px; }
+        .book-cover img { width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .book-info-main { flex: 1; }
+        .book-title { font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; }
+
+        /* 解決「字很歪」的關鍵：使用 Grid 對齊標籤 */
+        .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            padding-bottom: 15px;
+            grid-template-columns: 80px 1fr; /* 固定標籤寬度為 80px */
+            row-gap: 12px;
+            font-size: 16px;
+            margin-bottom: 25px;
         }
-        .no-results {
-            text-align: center;
-            color: #777;
-            margin-top: 50px;
-            font-size: 18px;
+        .info-label { color: #7f8c8d; font-weight: bold; }
+        .info-value a { color: #0056b3; text-decoration: none; }
+        .info-value a:hover { text-decoration: underline; }
+
+        .description-box {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            line-height: 1.6;
+            color: #444;
         }
+
+        /* 銷售操作區表格 */
+        .sales-section {
+            margin-top: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .section-title { font-size: 20px; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .sales-table { width: 100%; border-collapse: collapse; }
+        .sales-table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; color: #666; }
+        .sales-table td { padding: 15px 12px; border-bottom: 1px solid #eee; }
+        .price-tag { color: #d9534f; font-weight: bold; font-size: 18px; }
+        
+        .add-cart-btn {
+            background-color: #5cb85c;
+            color: white; border: none;
+            padding: 8px 16px; border-radius: 4px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .add-cart-btn:hover { background-color: #4cae4c; }
     </style>
 </head>
 <body>
 
     <div class="sticky-bar">
-        <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
-        
-        <form class="search-container" action="/frontend/customers/books" method="get">
-            <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
-            
-            {% if q %}
-                <a href="/frontend/customers/books" class="clear-btn" title="Clear Search">✕</a>
-            {% endif %}
-            
-            <button type="submit" class="search-btn">Search</button>
-        </form>
-        
+        <a href="/frontend/home" class="logo-home">Bookstore</a>
+        <input type="text" class="search-bar" placeholder="全站搜尋...">
         <div class="nav-icons">
-            <a href="/frontend/customers/cart">
-                購物車
-                <span>{{ cart_count or 0 }}</span>
-            </a>
-            {# 訂單入口 (跳轉至 /customers/orders) #}
-            <a href="/frontend/customers/orders">訂單</a>
-            {# 個人頁面 (跳轉至 /customers/profile) #}
-            <a href="/frontend/customers/profile">個人頁面</a>
+            <a href="/customers/cart">購物車 <span>{{ cart_count or 0 }}</span></a>
+            <a href="/customers/orders">訂單</a>
+            <a href="/customers/profile">個人頁面</a>
         </div>
     </div>
 
-    <div class="content-container">
-        
-        <h2 class="section-title">
-            {% if q %}
-                Search Results for "{{ q }}"
-            {% else %}
-                All Books
-            {% endif %}
-        </h2>
+    <div class="main-content">
+        {% if book %}
+        <div class="book-detail-section">
+            <div class="book-cover">
+                <img src="{{ book.image_url if book.image_url else 'https://via.placeholder.com/350x500' }}" alt="封面">
+            </div>
+            
+            <div class="book-info-main">
+                <div class="book-title">{{ book.title }}</div>
+                
+                <div class="info-grid">
+                    <div class="info-label">作者</div>
+                    <div class="info-value"><a href="/books/list?author={{ book.author }}">{{ book.author }}</a></div>
+                    
+                    <div class="info-label">出版社</div>
+                    <div class="info-value">{{ book.publisher }}</a></div>
+                    
+                    <div class="info-label">ISBN</div>
+                    <div class="info-value">{{ book.isbn }}</div>
+                    
+                    <div class="info-label">出版日期</div>
+                    <div class="info-value">{{ book.publish_date }}</div>
+                    
+                    <div class="info-label">分類</div>
+                    <div class="info-value">{{ book.category }}</a></div>
+                    
+                    {% if book.series %}
+                    <div class="info-label">系列</div>
+                    <div class="info-value">{{ book.series }}</a></div>
+                    {% endif %}
+                </div>
 
-        {% if books %}
-            <div class="books-grid">
-                {% for book in books %}
-                    {% include 'customer/book_card.jinja' %}
-                {% endfor %}
+                <div class="description-box">
+                    <strong>內容簡介</strong>
+                    <p>{{ book.description or "目前尚無簡介內容。" }}</p>
+                </div>
             </div>
-        {% else %}
-            <div class="no-results">
-                No books found.
-            </div>
+        </div>
+
+        <div class="sales-section">
+            <div class="section-title">各書店銷售資訊</div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>書店名稱</th>
+                        <th>價格</th>
+                        <th>庫存</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# 這裡會根據 price 由低到高排序 #}
+                    {% for mapping in sales_mappings|sort(attribute='price') %}
+                    <tr>
+                        <td>
+                            <a href="/bookstore/{{ mapping.bookstore_id }}/book/{{ book.book_id }}" style="color: #0056b3; text-decoration: none;">
+                                {{ mapping.bookstore_name }}
+                            </a>
+                        </td>
+                        <td><span class="price-tag">NT$ {{ mapping.price }}</span></td>
+                        <td>{{ mapping.store_quantity }}</td>
+                        <td>
+                            <button class="add-cart-btn" 
+                                    onclick="addToCart('{{ book.book_id }}', '{{ mapping.book_bookstore_mapping_id }}', {{ mapping.price }})">
+                                加入購物車
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align: center;">目前沒有書店銷售此書籍</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endif %}
-        
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-                button.addEventListener('click', async (event) => {
-                    // Alert logic placeholder
-                    alert('Add to cart functionality requires selecting a specific bookstore/price mapping.');
+        async function addToCart(bookId, mappingId, price) {
+            try {
+                const response = await fetch('/customers/cart-items', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        book_id: bookId,
+                        book_bookstore_mapping_id: mappingId,
+                        price: price,
+                        quantity: 1
+                    })
                 });
-            });
-        });
+                if (response.ok) {
+                    alert('已成功加入購物車！');
+                    window.location.reload();
+                } else {
+                    alert('加入購物車失敗，請稍後再試。');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('網路錯誤，請檢查連線。');
+            }
+        }
     </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.router.frontend.auth import auth
 from app.router.frontend.customer import customer
 from app.router.frontend.staff import staff
-
+from app.router.frontend.customer import customer as customer_router
 router = APIRouter()
 
 router.include_router(auth.router, prefix="/auth")
