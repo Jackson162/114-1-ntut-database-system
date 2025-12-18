@@ -48,3 +48,13 @@ async def get_all_customers(db: AsyncSession) -> list[Customer]:
     query = select(Customer).order_by(Customer.account)
     result = await db.execute(query)
     return result.scalars().all()
+
+async def update_customer_info(db: AsyncSession, account: str, name: str, email: str):
+    """更新使用者姓名與 Email"""
+    query = (
+        update(Customer)
+        .where(Customer.account == account)
+        .values(name=name, email=email)
+    )
+    await db.execute(query)
+    await db.commit()

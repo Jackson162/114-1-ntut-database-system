@@ -13,7 +13,7 @@ from app.db.operator.customer import get_all_customers, update_customer_info
 
 router = APIRouter()
 
-# --- API Endpoints for Management Operations ---
+AdminDep = Tuple[JwtPayload, Admin]
 
 #@router.patch("/users/{account}/status")
 #async def toggle_user_status(
