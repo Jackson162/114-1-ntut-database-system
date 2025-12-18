@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ author_name }} - 作者作品</title>
+    <style>
+        body {
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding-top: 80px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        .sticky-bar {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .logo-home { font-size: 24px; font-weight: bold; color: #4CAF50; text-decoration: none; }
+        .search-bar { width: 40%; padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; }
+
+        .nav-icons a { margin-left: 15px; color: #333; text-decoration: none; position: relative; }
+        .cart-badge {
+            background-color: red; color: white;
+            border-radius: 50%; padding: 2px 6px;
+            font-size: 10px; position: absolute;
+            top: -10px; right: -10px;
+        }
+
+        .main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .author-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .author-header h2 { margin: 0; }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 260px;
+            background: #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .book-title { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+        .book-title a { color: #0056b3; text-decoration: none; }
+        .book-title a:hover { text-decoration: underline; }
+
+        .price { color: #d9534f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="sticky-bar">
+    <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
+    <input type="text" class="search-bar" placeholder="全站搜尋...">
+    <div class="nav-icons">
+        <!-- ✅ 路徑統一成 frontend -->
+        <a href="/frontend/customers/carts">
+            購物車 <span class="cart-badge">{{ cart_count or 0 }}</span>
+        </a>
+        <a href="/frontend/customers/orders">訂單</a>
+        <a href="/frontend/customers/profile">個人頁面</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="author-header">
+        <h2>{{ author_name }}</h2>
+        <p>此頁顯示該作者在此書店的所有作品</p>
+    </div>
+
+    {% if books and books|length > 0 %}
+    <div class="book-grid">
+        {% for book in books %}
+        <div class="book-card">
+           <div class="book-cover">
+                <img src="{{ book.image_url }}" alt="封面" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+            </div>
+
+            <div class="book-title">
+                <!-- ✅ 只用 book_id 連到詳頁 -->
+                <a href="/frontend/customers/book/{{ book.book_id }}">
+                    {{ book.title }}
+                </a>
+            </div>
+
+            <!-- ✅ 修正：customer.py 傳的是 price，不是 min_price -->
+            <div class="price">NT$ {{ book.min_price }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p>此書店目前沒有販售該作者的作品。</p>
+    {% endif %}
+</div>
+
+</body>
+</html>

@@ -1,10 +1,9 @@
 from typing import Tuple, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, status
-
+from app.db.models.bookstore import Bookstore
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
-
 from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
@@ -13,6 +12,18 @@ from app.db.operator.order import get_orders_by_customer_account
 from app.db.operator.book import search_books, get_all_books
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
+
+from fastapi import Query
+from uuid import UUID
+from sqlalchemy import select
+
+from app.db.models.book import Book
+from app.db.models.book_bookstore_mapping import BookBookstoreMapping
+from app.db.operator.cart import get_cart_item_count
+
+
+from sqlalchemy import select
+from fastapi import HTTPException
 
 from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
 from fastapi.templating import Jinja2Templates
@@ -89,7 +100,7 @@ async def get_customer_orders(
 
 # 結帳畫面
 @router.get("/checkout")
-async def checkout_page(request: Request, checkout_error: Optional[str] = None):
+async def get_checkout_page(request: Request, checkout_error: Optional[str] = None):
     context = {"request": request, "checkout_error": checkout_error}
 
     return templates.TemplateResponse(
@@ -260,4 +271,121 @@ async def checkout_page(
     return templates.TemplateResponse(
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
+    
+    
+@router.get("/author/{author_name}")
+async def get_author_page(
+    request: Request,
+    author_name: str,
+    bookstore_id: UUID = Query(...),
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_payload, customer = login_data
+
+    # 1) navbar 購物車數量
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except Exception:
+        pass
+
+    # 2) 防呆：作者名去掉前後空白
+    author_name = author_name.strip()
+
+    # 3) 查：指定書店 + 指定作者 的所有書
+    stmt = (
+        select(Book, BookBookstoreMapping)
+        .join(BookBookstoreMapping, BookBookstoreMapping.book_id == Book.book_id)
+        .where(
+            BookBookstoreMapping.bookstore_id == bookstore_id,
+            Book.author == author_name,
+        )
+        .order_by(Book.title.asc())
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    # 4) 整理給 template（欄位名要對上 book_author.jinja）
+    books = []
+    for book, mapping in rows:
+        books.append({
+            "book_id": str(book.book_id),
+            "title": book.title,
+            "author": book.author,
+            "image_url": "/static/book.png",   # 你專案預設書封面
+            "min_price": mapping.price,        # 重要：template 用 min_price
+            "bookstore_id": str(mapping.bookstore_id),
+        })
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "author_name": author_name,
+        "bookstore_id": str(bookstore_id),
+        "books": books,
+        "cart_count": cart_count,
+    }
+
+    return templates.TemplateResponse(
+        "/customer/book_author.jinja",
+        context=context,
+        status_code=status.HTTP_200_OK
+    )
+    
+@router.get("/book/{book_id}")
+async def get_book_detail_page(
+    book_id: str,
+    request: Request,
+    bookstore_id: Optional[UUID] = Query(None),  # ✅ 接 query
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    token_payload, customer = login_data
+
+    # 1) 書籍
+    result = await db.execute(select(Book).where(Book.book_id == book_id))
+    book_obj = result.scalar_one_or_none()
+    if not book_obj:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="找不到此書籍")
+
+    # 2) 書店銷售資訊
+    mapping_result = await db.execute(
+        select(BookBookstoreMapping, Bookstore.name)
+        .join(Bookstore, BookBookstoreMapping.bookstore_id == Bookstore.bookstore_id)
+        .where(BookBookstoreMapping.book_id == book_id)
+        .order_by(BookBookstoreMapping.price)
+    )
+
+    sales_mappings = []
+    first_bs_id = None
+    for mapping, store_name in mapping_result:
+        if first_bs_id is None:
+            first_bs_id = mapping.bookstore_id
+        sales_mappings.append(
+            {
+                "bookstore_id": mapping.bookstore_id,
+                "bookstore_name": store_name,
+                "price": mapping.price,
+                "store_quantity": mapping.store_quantity,
+                "book_bookstore_mapping_id": mapping.book_bookstore_mapping_id,
+            }
+        )
+
+    # ✅ 沒帶 bookstore_id 就用第一間（通常最便宜那間）
+    bookstore_id_for_author = bookstore_id or first_bs_id
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "book": book_obj,
+        "sales_mappings": sales_mappings,
+        "bookstore_id": bookstore_id_for_author,  # ✅ 給 template 用
+        "cart_count": 0,
+    }
+
+    return templates.TemplateResponse("/customer/books_detail.jinja", context=context)
+    
+
     
