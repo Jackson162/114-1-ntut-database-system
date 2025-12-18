@@ -2,7 +2,7 @@ from typing import Optional
 from app.db.models.customer import Customer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 
 async def get_customer_by_account(db: AsyncSession, account: str):
