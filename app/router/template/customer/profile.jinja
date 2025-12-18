@@ -157,7 +157,6 @@
     <div class="sidebar">
         <a href="/frontend/customers/profile" class="{% if page == 'profile' %}active{% endif %}">個人資料</a>
         <a href="/frontend/customers/coupons" class="{% if page == 'coupons' %}active{% endif %}">我的優惠券</a>
-        <a href="/frontend/customers/profile/password">修改密碼</a>
         <a href="/frontend/customers/logout">登出</a>
     </div>
 
@@ -179,7 +178,8 @@
 
             <div class="form-group">
                 <label>聯絡電話</label>
-                <input type="text" name="phone" value="{{ customer.phone }}">
+                <input type="text" name="phone" value="{{ customer.phone_number }}">
+
             </div>
 
             <button type="submit" class="save-btn">儲存</button>
@@ -201,7 +201,7 @@
                 {% for coupon in admin_coupons %}
                 <tr>
                     <td>{{ coupon.name }}（平台）</td>
-                    <td>{{ coupon.discount_percentage }}%</td>
+                    <td>{{ (coupon.discount_percentage * 100) | round(1) }}%</td>
                     <td>
                         {% if coupon.end_date %}
                             {{ coupon.end_date }}

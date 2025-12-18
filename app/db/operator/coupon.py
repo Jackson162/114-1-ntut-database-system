@@ -43,7 +43,6 @@ async def get_active_bookstore_coupons(db: AsyncSession):
     )
     result = await db.execute(stmt)
     return result.scalars().all()
-<<<<<<< HEAD
 
     query = select(Coupon).where(Coupon.coupon_id == coupon_id).options(joinedload(Coupon.staff))
     result = await db.execute(query)
@@ -104,5 +103,4 @@ async def delete_coupon(db: AsyncSession, coupon_id: UUID):
     query = delete(Coupon).where(Coupon.coupon_id == coupon_id).returning(Coupon)
     result = await db.execute(query)
     return result.scalars().one_or_none()
-=======
->>>>>>> feature/customer-profile
+

@@ -1,6 +1,7 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status , Form
+from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
@@ -258,6 +259,27 @@ async def customer_profile_page(
         context=context,
         status_code=status.HTTP_200_OK,
     )
+@router.post("/profile/update")
+async def update_customer_profile(
+    name: Annotated[str, Form()],
+    email: Annotated[str, Form()],
+    phone: Annotated[str, Form()],
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    customer.name = name
+    customer.email = email
+    customer.phone_number = phone
+
+    await db.commit()
+
+    return RedirectResponse(
+        url="/frontend/customers/profile",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
 @router.get("/coupons")
 async def customer_coupons_page(
     request: Request,
@@ -284,6 +306,14 @@ async def customer_coupons_page(
         status_code=status.HTTP_200_OK,
     )
 
+@router.get("/logout")
+async def customer_logout():
+    response = RedirectResponse(
+        url="/frontend/auth/login",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+    response.delete_cookie("auth_token", path="/")
+    return response
 
 @router.get("/checkout")
 async def checkout_page(
@@ -300,4 +330,5 @@ async def checkout_page(
     return templates.TemplateResponse(
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
+
 
