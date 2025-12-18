@@ -40,7 +40,7 @@
 <body>
     <div class="sticky-bar">
         <div class="left">
-            <a href="/admin" class="home-icon" title="Home">🏠</a>
+            <a href="/frontend/admin/home" class="home-icon" title="Home">🏠</a>
             <span class="title">Admin Dashboard</span>
         </div>
         <div class="right">
@@ -66,7 +66,7 @@
             try {
                 const res = await fetch('/auth/logout', { method: 'POST' });
                 if (res.ok) {
-                    window.location.href = '/login'; // 跳轉至登入頁
+                    window.location.href = '/frontend/auth/login'; // 跳轉至登入頁
                 } else {
                     alert('Logout failed');
                 }
