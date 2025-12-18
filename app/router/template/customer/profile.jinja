@@ -25,24 +25,28 @@
             box-sizing: border-box;
             z-index: 1000;
         }
+
         .home-icon {
             font-size: 22px;
             font-weight: bold;
             color: #4CAF50;
             text-decoration: none;
         }
+
         .search-bar {
             width: 40%;
             padding: 8px 15px;
             border: 1px solid #ccc;
             border-radius: 20px;
         }
+
         .nav-icons a {
             margin-left: 15px;
             text-decoration: none;
             color: #333;
             position: relative;
         }
+
         .nav-icons span {
             background-color: red;
             color: white;
@@ -68,6 +72,7 @@
             margin-right: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+
         .sidebar a {
             display: block;
             padding: 10px;
@@ -76,6 +81,7 @@
             border-radius: 4px;
             margin-bottom: 5px;
         }
+
         .sidebar a:hover,
         .sidebar a.active {
             background-color: #4CAF50;
@@ -100,17 +106,20 @@
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             font-size: 14px;
             margin-bottom: 5px;
         }
+
         input {
             width: 100%;
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
         }
+
         .save-btn {
             background-color: #4CAF50;
             color: white;
@@ -124,12 +133,14 @@
             width: 100%;
             border-collapse: collapse;
         }
+
         th, td {
             border-bottom: 1px solid #ddd;
             padding: 10px;
             text-align: left;
             font-size: 14px;
         }
+
         th {
             background-color: #f4f7f6;
         }
@@ -140,73 +151,76 @@
 <div class="sticky-bar">
     <a href="/home" class="home-icon">🏠 Bookstore</a>
 
-    <input type="text" class="search-bar" placeholder="全站搜尋...">
+    <input type="text" class="search-bar" placeholder="Search the entire site...">
 
     <div class="nav-icons">
         <a href="/frontend/customers/cart">
-            購物車
+            Cart
             <span>{{ cart_count or 0 }}</span>
         </a>
-        <a href="/frontend/customers/orders">訂單</a>
-        <a href="/frontend/customers/profile">個人頁面</a>
+        <a href="/frontend/customers/orders">Orders</a>
+        <a href="/frontend/customers/profile">Profile</a>
     </div>
 </div>
 
 <div class="page-container">
 
     <div class="sidebar">
-        <a href="/frontend/customers/profile" class="{% if page == 'profile' %}active{% endif %}">個人資料</a>
-        <a href="/frontend/customers/coupons" class="{% if page == 'coupons' %}active{% endif %}">我的優惠券</a>
-        <a href="/frontend/customers/logout">登出</a>
+        <a href="/frontend/customers/profile" class="{% if page == 'profile' %}active{% endif %}">
+            Personal Information
+        </a>
+        <a href="/frontend/customers/coupons" class="{% if page == 'coupons' %}active{% endif %}">
+            My Coupons
+        </a>
+        <a href="/frontend/customers/logout">Logout</a>
     </div>
 
     <div class="main-content">
 
         {% if page == 'profile' %}
-        <h2 class="section-title">個人資料</h2>
+        <h2 class="section-title">Personal Information</h2>
 
         <form method="post" action="/frontend/customers/profile/update">
             <div class="form-group">
-                <label>姓名</label>
+                <label>Full Name</label>
                 <input type="text" name="name" value="{{ customer.name }}">
             </div>
 
             <div class="form-group">
-                <label>電子信箱</label>
+                <label>Email Address</label>
                 <input type="email" name="email" value="{{ customer.email }}">
             </div>
 
             <div class="form-group">
-                <label>聯絡電話</label>
+                <label>Phone Number</label>
                 <input type="text" name="phone" value="{{ customer.phone_number }}">
-
             </div>
 
-            <button type="submit" class="save-btn">儲存</button>
+            <button type="submit" class="save-btn">Save Changes</button>
         </form>
         {% endif %}
 
         {% if page == 'coupons' %}
-        <h2 class="section-title">我的優惠券</h2>
+        <h2 class="section-title">My Coupons</h2>
 
         <table>
             <thead>
                 <tr>
-                    <th>優惠券名稱</th>
-                    <th>折扣</th>
-                    <th>使用期限</th>
+                    <th>Coupon Name</th>
+                    <th>Discount</th>
+                    <th>Valid Until</th>
                 </tr>
             </thead>
             <tbody>
                 {% for coupon in admin_coupons %}
                 <tr>
-                    <td>{{ coupon.name }}（平台）</td>
+                    <td>{{ coupon.name }} (Platform)</td>
                     <td>{{ (coupon.discount_percentage * 100) | round(1) }}%</td>
                     <td>
                         {% if coupon.end_date %}
                             {{ coupon.end_date }}
                         {% else %}
-                            無期限
+                            No Expiration
                         {% endif %}
                     </td>
                 </tr>
@@ -214,18 +228,13 @@
 
                 {% for coupon in bookstore_coupons %}
                 <tr>
-                    <td>
-                        {{ coupon.type }}
-                        {% if coupon.staff %}
-                            （{{ coupon.staff.bookstore.name }}）
-                        {% endif %}
-                    </td>
-                    <td>{{ coupon.discount_percentage }}%</td>
+                    <td>{{ coupon.type }} ({{ coupon.staff.bookstore.name }})</td>
+                    <td>{{ (coupon.discount_percentage * 100) | round(1) }}%</td>
                     <td>
                         {% if coupon.end_date %}
                             {{ coupon.end_date }}
                         {% else %}
-                            無期限
+                            No Expiration
                         {% endif %}
                     </td>
                 </tr>
