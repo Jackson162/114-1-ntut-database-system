@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,12 +34,23 @@ async def create_coupon(
         "end_date": end_date,
     }
 
-    if role == UserRole.ADMIN:
+    if role == UserRole.ADMIN.value:
         values["admin_account"] = account
-    elif role == UserRole.STAFF:
+    elif role == UserRole.STAFF.value:
         values["staff_account"] = account
 
     query = insert(Coupon).values(values).returning(Coupon)
 
     result = await db.execute(query)
     return result.scalars().one()
+
+
+async def get_coupon_by_accounts(db: AsyncSession, accounts: List[str], role: UserRole):
+
+    query = select(Coupon).where(Coupon.admin_account.in_(accounts))
+
+    if role == UserRole.STAFF.value:
+        query = select(Coupon).where(Coupon.staff_account.in_(accounts))
+
+    result = await db.execute(query)
+    return result.scalars().all()

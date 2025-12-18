@@ -65,3 +65,9 @@ async def update_staff(
         await db.commit()
 
     return staff
+
+
+async def get_staffs_by_bookstore_id(db: AsyncSession, bookstore_id: UUID):
+    query = select(Staff).where(Staff.bookstore_id == bookstore_id)
+    result = await db.execute(query)
+    return result.scalars().all()

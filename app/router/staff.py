@@ -10,6 +10,7 @@ from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.enum.order import OrderStatus
+from app.enum.coupon import CouponType
 from app.db.models.staff import Staff
 from app.db.operator.bookstore import create_bookstore
 from app.db.operator.staff import update_staff
@@ -22,7 +23,7 @@ from app.db.operator.bookbookstoremapping import (
     update_book_bookstore_mapping,
     delete_book_bookstore_mapping,
 )
-
+from app.db.operator.coupon import create_coupon
 from app.util.auth import JwtPayload
 from app.logging.logger import get_logger
 

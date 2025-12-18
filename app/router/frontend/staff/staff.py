@@ -11,6 +11,9 @@ from app.db.models.staff import Staff
 from app.db.operator.bookstore import get_bookstore_by_id
 from app.db.operator.order import get_orders_by_bookstore_id
 from app.db.operator.book import list_books_by_bookstore_id
+from app.db.operator.staff import get_staffs_by_bookstore_id
+from app.db.operator.coupon import get_coupon_by_accounts
+
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
 from app.router.schema.sqlalchemy import (
@@ -153,4 +156,28 @@ async def get_staff_books(
 
     return templates.TemplateResponse(
         "/staff/books.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/coupons")
+async def get_staff_coupons(
+    request: Request,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    staffs = await get_staffs_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
+    staff_accounts = [staff.account for staff in staffs]
+
+    coupons = await get_coupon_by_accounts(db=db, accounts=staff_accounts, role=UserRole.STAFF)
+    coupon_dicts = [coupon.dict() for coupon in coupons]
+
+    context = {
+        "request": request,
+        "coupons": coupon_dicts,
+    }
+
+    return templates.TemplateResponse(
+        "/staff/coupons.jinja", context=context, status_code=status.HTTP_200_OK
     )
