@@ -57,6 +57,7 @@ class BookstoreSchema(BaseModel):
 
 
 class CouponSchema(BaseModel):
+    name: str
     coupon_id: UUID
     type: str
     discount_percentage: Decimal
@@ -104,6 +105,15 @@ class OrderSchema(BaseModel):
     recipient_name: str
     coupon_id: Optional[UUID] = None
     customer_account: str
+
+    class Config:
+        orm_mode = True
+
+
+class StaffSchema(BaseModel):
+    account: str
+    name: str
+    bookstore_id: UUID
 
     class Config:
         orm_mode = True

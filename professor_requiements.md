@@ -88,5 +88,5 @@ The quantity of purchasing for a product must be less than or equal to the curre
 
 # Note:
 1. The project should mainly focus on the database design of the system.
-2. 
-3. The above requirements may be incomplete. You are encouraged to explore more detailed requirements about the system by interviewing instructor or surveying (Googling) other similar systems from the Internet.
+
+2. The above requirements may be incomplete. You are encouraged to explore more detailed requirements about the system by interviewing instructor or surveying (Googling) other similar systems from the Internet.
