@@ -176,11 +176,11 @@
                                     <form action="/staffs/book_bookstore_mappings/{{book.book_bookstore_mapping_id}}/update" method="post" class="mb-2">
                                         <div class="row g-2">
                                             <div class="col">
-                                                <label for="price-{{ book.isbn }}" class="form-label-sm visually-hidden">Price:</label>
+                                                <label for="price-{{ book.isbn }}" class="form-label-sm">Price:</label>
                                                 <input type="number" step="1" class="form-control form-control-sm" id="price-{{ book.isbn }}" name="price" value="{{ book.price }}" placeholder="Price">
                                             </div>
                                             <div class="col">
-                                                <label for="store_quantity-{{ book.isbn }}" class="form-label-sm visually-hidden">Quantity:</label>
+                                                <label for="store_quantity-{{ book.isbn }}" class="form-label-sm">Quantity:</label>
                                                 <input type="number" class="form-control form-control-sm" id="store_quantity-{{ book.isbn }}" name="store_quantity" value="{{ book.store_quantity }}" placeholder="Quantity">
                                             </div>
                                         </div>
