@@ -1,4 +1,6 @@
-from typing import Tuple
+from typing import Tuple, Annotated, Optional
+from uuid import UUID
+from datetime import date
 from fastapi import APIRouter, Depends, Request, status, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,10 +9,12 @@ from app.router.template.index import templates
 from app.middleware.db_session import get_db_session
 from app.middleware.depends import validate_token_by_role
 from app.enum.user import UserRole
+from app.enum.coupon import CouponType
 from app.util.auth import JwtPayload
 from app.db.models.admin import Admin
 from app.db.operator.customer import get_all_customers, update_customer_info, delete_customer
 from app.db.operator.staff import delete_staff
+from app.db.operator.coupon import create_coupon, delete_coupon
 
 router = APIRouter()
 
@@ -59,23 +63,52 @@ async def remove_staff(
         return {"message": "Staff deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
-#@router.patch("/users/{account}/status")
-#async def toggle_user_status(
-#    account: str,
-#    request: Request,
-#    db: AsyncSession = Depends(get_db_session),
-#    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
-#):
-#    """啟用/停用 使用者帳號"""
-#    try:
-#        data = await request.json()
-#        is_active = data.get("is_active")
-#        if is_active is None:
-#            raise HTTPException(status_code=400, detail="Missing is_active field")
-#        
-#        await update_customer_status(db, account, is_active)
-#        return {"message": "Status updated"}
-#    except Exception as e:
-#        raise HTTPException(status_code=500, detail=str(e))
+ 
+@router.post("/coupons", response_class=RedirectResponse)
+async def create_admin_coupon(
+    request: Request,
+    name: Annotated[str, Form()],
+    type: Annotated[CouponType, Form()],
+    discount_percentage: Annotated[float, Form()],
+    start_date: Annotated[date, Form()],
+    end_date: Annotated[Optional[date], Form()] = None,
+    db: AsyncSession = Depends(get_db_session),
+    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
+):
+    """Admin 建立平台優惠券"""
+    _, admin = user_data
+    try:
+        await create_coupon(
+            db=db,
+            account=admin.account,
+            name=name,
+            type=type,
+            discount_percentage=discount_percentage,
+            start_date=start_date,
+            end_date=end_date,
+            role=UserRole.ADMIN,
+        )
+        await db.commit()
+        return RedirectResponse("/frontend/admin/coupons", status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create coupon: {str(e)}")
+
+ 
+@router.delete("/coupons/{coupon_id}")
+async def remove_coupon(
+    coupon_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    user_data: AdminDep = Depends(validate_token_by_role(UserRole.ADMIN))
+):
+    """Admin 刪除任意優惠券"""
+    try:
+        result = await delete_coupon(db, coupon_id)
+        if not result:
+             raise HTTPException(status_code=404, detail="Coupon not found")
+        await db.commit()
+        return {"message": "Coupon deleted"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
