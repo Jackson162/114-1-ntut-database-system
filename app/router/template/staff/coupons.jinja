@@ -1,8 +1,12 @@
-{% extends "base.jinja" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Coupons</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
 
-{% block title %}Bookstore Coupons{% endblock %}
-
-{% block content %}
+<body>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>My Coupons</h1>
@@ -47,10 +51,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<!-- Add Bootstrap Icons CSS if not already included in base.jinja -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-{% endblock %}
+</body>
