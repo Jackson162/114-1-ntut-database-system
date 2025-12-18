@@ -15,6 +15,8 @@ from app.router.schema.auth import LoginData
 
 router = APIRouter()
 
+COOKIE_KEY = "auth_token"
+
 
 @router.post("/register", response_class=RedirectResponse)
 async def register(
@@ -90,7 +92,7 @@ async def login(
                 status_code=200,
             )
             response.set_cookie(
-                key="auth_token",
+                key=COOKIE_KEY,
                 value=auth_token,
                 max_age=expires_in_seconds,
                 httponly=True,
@@ -107,3 +109,12 @@ async def login(
             content={"error": repr(err)},
             status_code=500,
         )
+
+
+@router.post("/logout", response_class=HTMLResponse)
+async def logout():
+    redirect_url = "/frontend/auth/login"
+    response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(key=COOKIE_KEY)
+
+    return response

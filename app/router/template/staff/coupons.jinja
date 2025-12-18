@@ -58,7 +58,9 @@
                     </li>
                 </ul>
                 <div class="d-flex">
-                    <a href="/logout" class="btn btn-outline-danger">Logout</a>
+                  <form action="/auth/logout" method="post">
+                      <button type="submit" class="btn btn-outline-danger">Logout</button>
+                  </form>
                 </div>
             </div>
         </div>
