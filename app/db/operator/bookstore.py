@@ -38,3 +38,4 @@ async def create_bookstore(
         await db.commit()
 
     return result.scalar_one()
+
