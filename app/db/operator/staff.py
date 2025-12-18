@@ -4,6 +4,7 @@ from app.db.models.staff import Staff
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 
 
 async def get_staff_by_account(db: AsyncSession, account: str):
@@ -11,9 +12,9 @@ async def get_staff_by_account(db: AsyncSession, account: str):
     result = await db.execute(query)
     return result.scalars().one()
 
-async def get_all_staffs(db: AsyncSession) -> list[Staff]: # [新增]
+async def get_all_staffs(db: AsyncSession) -> list[Staff]:
     """取得所有員工列表"""
-    query = select(Staff).order_by(Staff.account)
+    query = select(Staff).options(selectinload(Staff.bookstore)).order_by(Staff.account)
     result = await db.execute(query)
     return result.scalars().all()
 

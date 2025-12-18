@@ -54,7 +54,7 @@
             <tr>
                 <th>帳號 (Account)</th>
                 <th>姓名 (Name)</th>
-                <th>所屬書店 (Bookstore ID)</th>
+                <th>所屬書店 (Bookstore Name)</th>
                 <th>管理操作</th>
             </tr>
         </thead>
@@ -63,7 +63,7 @@
             <tr>
                 <td>{{ staff.account }}</td>
                 <td>{{ staff.name }}</td>
-                <td>{{ staff.bookstore_id or '無' }}</td>
+                <td>{{ staff.bookstore.name if staff.bookstore else '無' }}</td>
                 <td>
                     <button class="btn btn-delete" onclick="deleteUser('{{ staff.account }}', 'staff')">刪除</button>
                 </td>
