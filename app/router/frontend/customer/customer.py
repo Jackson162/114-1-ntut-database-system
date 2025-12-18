@@ -1,6 +1,7 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status , Form
+from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
@@ -11,6 +12,10 @@ from app.enum.user import UserRole
 from app.db.models.customer import Customer
 from app.db.operator.order import get_orders_by_customer_account
 from app.db.operator.book import search_books, get_all_books
+from app.db.operator.coupon import (
+    get_active_admin_coupons,
+    get_active_bookstore_coupons,
+)
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
 
@@ -84,16 +89,6 @@ async def get_customer_orders(
 
     return templates.TemplateResponse(
         "/customer/orders.jinja", context=context, status_code=status.HTTP_200_OK
-    )
-
-
-# 結帳畫面
-@router.get("/checkout")
-async def checkout_page(request: Request, checkout_error: Optional[str] = None):
-    context = {"request": request, "checkout_error": checkout_error}
-
-    return templates.TemplateResponse(
-        "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
 
 
@@ -245,6 +240,96 @@ async def view_cart(
         "/customer/carts.jinja", context=context, status_code=status.HTTP_200_OK
     )
     
+@router.get("/profile")
+async def customer_profile_page(
+    request: Request,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except:
+        pass
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "cart_count": cart_count,
+        "page": "profile",
+    }
+
+    return templates.TemplateResponse(
+        "/customer/profile.jinja",
+        context=context,
+        status_code=status.HTTP_200_OK,
+    )
+
+@router.post("/profile/update")
+async def update_customer_profile(
+    name: Annotated[str, Form()],
+    email: Annotated[str, Form()],
+    phone: Annotated[str, Form()],
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    customer.name = name
+    customer.email = email
+    customer.phone_number = phone
+
+    await db.commit()
+
+    return RedirectResponse(
+        url="/frontend/customers/profile",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+@router.get("/coupons")
+async def customer_coupons_page(
+    request: Request,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    admin_coupons = await get_active_admin_coupons(db)
+    bookstore_coupons = await get_active_bookstore_coupons(db)
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except:
+        pass
+
+    context = {
+        "request": request,
+        "customer": customer,
+        "cart_count": cart_count,
+        "page": "coupons",
+        "admin_coupons": admin_coupons,
+        "bookstore_coupons": bookstore_coupons,
+    }
+
+
+    return templates.TemplateResponse(
+        "/customer/profile.jinja",
+        context=context,
+        status_code=status.HTTP_200_OK,
+    )
+
+@router.get("/logout")
+async def customer_logout():
+    response = RedirectResponse(
+        url="/frontend/auth/login",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+    response.delete_cookie("auth_token", path="/")
+    return response
+
 @router.get("/checkout")
 async def checkout_page(
     request: Request, 
@@ -260,4 +345,5 @@ async def checkout_page(
     return templates.TemplateResponse(
         "/customer/checkout.jinja", context=context, status_code=status.HTTP_200_OK
     )
-    
+
+
