@@ -39,6 +39,7 @@ async def edit_user_info(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/users/{account}")
+@router.delete("/users/{account}")
 async def remove_customer(
     account: str,
     db: AsyncSession = Depends(get_db_session),
@@ -48,6 +49,8 @@ async def remove_customer(
     try:
         await delete_customer(db, account)
         return {"message": "Customer deleted"}
+    except InterruptedError:  
+        raise HTTPException(status_code=400, detail="無法刪除該使用者，因為仍有相關聯的資料 (如訂單、購物車等)")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -61,6 +64,8 @@ async def remove_staff(
     try:
         await delete_staff(db, account)
         return {"message": "Staff deleted"}
+    except InterruptedError: 
+        raise HTTPException(status_code=400, detail="無法刪除該員工，因為仍有相關聯的資料")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
  
