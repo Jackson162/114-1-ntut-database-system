@@ -235,16 +235,16 @@
             <button type="submit" class="search-btn">Search</button>
         </form>
         <div class="nav-icons">
-            <a href="/frontend/customers/carts">購物車<span>{{ cart_count or 0 }}</span></a>
-            <a href="/frontend/customers/orders">訂單</a>
-            <a href="/frontend/customers/profile">個人頁面</a>
+            <a href="/frontend/customers/carts">Cart<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders">Orders</a>
+            <a href="/frontend/customers/profile">Profile</a>
         </div>
     </div>
 
     <div class="content-container">
         
         {% if q %}
-            <h2 class="section-title">搜尋結果: "{{ q }}"</h2>
+            <h2 class="section-title">Search Results: "{{ q }}"</h2>
             
             {% if grouped_books %}
                 {% for store_name, books in grouped_books.items() %}
@@ -258,7 +258,7 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="no-results">找不到相關書籍。</div>
+                <div class="no-results">No Relevent Books Found</div>
             {% endif %}
 
         {% else %}
@@ -271,7 +271,7 @@
             </div>
             {% endif %}
         
-            <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
+            <h2 class="section-title">✨ All Books</h2>
             
             {% if grouped_new_arrivals %}
                 {% for store_name, books in grouped_new_arrivals.items() %}
