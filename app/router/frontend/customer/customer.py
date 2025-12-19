@@ -18,7 +18,13 @@ from app.db.operator.coupon import (
 from app.util.auth import JwtPayload
 from app.router.template.index import templates
 
-from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
+from app.router.schema.sqlalchemy import (
+    BookSchema,
+    BookstoreSchema,
+    CouponSchema,
+    OrderItemSchema,
+    OrderSchema,
+)
 from app.db.operator.cart import get_cart_item_count, get_cart_details
 from app.db.operator.book import get_all_categories
 from app.db.operator.bookstore import get_bookstore_by_id
@@ -57,6 +63,12 @@ async def get_customer_orders(
         for order in orders:
             order_dict = OrderSchema.from_orm(order).dict()
             order_dict["order_items"] = []
+
+            if hasattr(order, "coupon") and order.coupon:
+                order_dict["coupon"] = CouponSchema.from_orm(order.coupon).dict()
+            else:
+                order_dict["coupon"] = None
+
             order_dicts.append(order_dict)
 
             for item in order.order_items:

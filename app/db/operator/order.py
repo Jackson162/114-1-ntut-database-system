@@ -12,7 +12,7 @@ from app.enum.order import OrderStatus
 
 async def get_orders_by_customer_account(db: AsyncSession, customer_account: str):
 
-    options = (
+    option_1 = (
         # 1. Order.order_items (TO-MANY collection) -> CORRECT: selectinload
         selectinload(Order.order_items).options(
             # 2. OrderItem.book_bookstore_mapping (TO-ONE object) -> CORRECTED: joinedload
@@ -24,7 +24,14 @@ async def get_orders_by_customer_account(db: AsyncSession, customer_account: str
             )
         )
     )
-    query = select(Order).where(Order.customer_account == customer_account).options(options)
+
+    option_2 = joinedload(Order.coupon)
+    query = (
+        select(Order)
+        .where(Order.customer_account == customer_account)
+        .options(option_1)
+        .options(option_2)
+    )
     result = await db.execute(query)
     return list(result.scalars().all())
 

@@ -154,6 +154,19 @@
         .order-status.delivering { background-color: #f0ad4e; }
         .order-status.delivered { background-color: #5bc0de; }
         .order-status.completed { background-color: #5cb85c; }
+        .order-header-tags {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .coupon-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
 
         .order-body {
             padding: 20px;
@@ -266,8 +279,13 @@
                             <span><strong>Order ID:</strong> {{ order.order_id }}</span>
                             <span><strong>Total:</strong> ${{ "%.2f"|format(order.total_price) }}</span>
                         </div>
-                        <div class="order-status {{ order.status }}">
-                            {{ order.status }}
+                        <div class="order-header-tags">
+                            {% if order.coupon %}
+                            <span class="coupon-badge">Coupon: {{ order.coupon.name }}</span>
+                            {% endif %}
+                            <div class="order-status {{ order.status }}">
+                                {{ order.status }}
+                            </div>
                         </div>
                     </div>
                     <div class="order-body">
@@ -281,8 +299,8 @@
                                     <div class="order-item-bookstore">Sold by: {{ item.bookstore.name }}</div>
                                 </div>
                                 <div class="order-item-price-qty">
-                                    <div>${{ "%.2f"|format(item.price) }}</div>
-                                    <div>Qty: {{ item.quantity }}</div>
+                                    <div>Price: ${{ "%.2f"|format(item.price) }}</div>
+                                    <div>Quantity: {{ item.quantity }}</div>
                                 </div>
                             </div>
                             {% endfor %}
@@ -291,7 +309,8 @@
                             <h3>Shipping Details</h3>
                             <p>
                                 <strong>Recipient:</strong> {{ order.recipient_name }}<br>
-                                <strong>Address:</strong> {{ order.shipping_address }}
+                                <strong>Address:</strong> {{ order.shipping_address }}<br>
+                                <strong>Shipping Fee:</strong> ${{ "%.2f"|format(order.shipping_fee) }}
                             </p>
                         </div>
                     </div>
