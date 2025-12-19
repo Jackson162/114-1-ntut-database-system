@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, and_, delete
 from sqlalchemy.orm import selectinload
@@ -76,6 +76,6 @@ async def clear_cart_items(db: AsyncSession, cart_id: UUID):
     await db.execute(stmt)
 
 
-async def delete_cart_item_by_item_id(db: AsyncSession, cart_item_id: UUID):
-    query = delete(CartItem).where(CartItem.cart_item_id == cart_item_id)
+async def delete_cart_item_by_item_ids(db: AsyncSession, cart_item_ids: List[UUID]):
+    query = delete(CartItem).where(CartItem.cart_item_id.in_(cart_item_ids))
     await db.execute(query)
