@@ -182,8 +182,8 @@ async def create_customer_order(
             if mapping.store_quantity < item.quantity:
                 raise Exception(f"Insufficient stock for book: {mapping.book.title}")
 
-            item_total_price = mapping.price * item.quantity
-            item_total_price += item_total_price
+            sub_total_price = mapping.price * item.quantity
+            item_total_price += sub_total_price
 
             # 暫存資料，等等寫入
             order_items_data.append(
@@ -238,7 +238,7 @@ async def create_customer_order(
             db=db, cart_item_ids=[item.cart_item_id for item in target_cart_items]
         )
 
-        await db.commit()
+        # await db.commit()
 
         # 8. 跳轉到訂單列表或成功頁面
         return RedirectResponse(

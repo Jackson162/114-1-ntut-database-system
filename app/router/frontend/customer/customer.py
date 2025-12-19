@@ -5,13 +5,11 @@ from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy import select
 
 from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.db.models.customer import Customer
-from app.db.models.bookstore import Bookstore
 from app.db.operator.order import get_orders_by_customer_account
 from app.db.operator.coupon import (
     get_active_admin_coupons,
@@ -23,7 +21,7 @@ from app.router.template.index import templates
 from app.router.schema.sqlalchemy import OrderSchema, OrderItemSchema, BookSchema, BookstoreSchema
 from app.db.operator.cart import get_cart_item_count, get_cart_details
 from app.db.operator.book import get_all_categories
-
+from app.db.operator.bookstore import get_bookstore_by_id
 from app.db.operator.bookbookstoremapping import (
     search_books_with_bookstore_details,
     get_new_arrivals_with_bookstore_details,
@@ -352,10 +350,7 @@ async def checkout_page(
     except Exception:
         pass
 
-    bookstore_result = await db.execute(
-        select(Bookstore).where(Bookstore.bookstore_id == bookstore_id)
-    )
-    bookstore = bookstore_result.scalar_one_or_none()
+    bookstore = await get_bookstore_by_id(db=db, bookstore_id=bookstore_id)
 
     if not bookstore:
         return RedirectResponse(
