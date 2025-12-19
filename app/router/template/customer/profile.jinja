@@ -162,6 +162,7 @@
     <div class="container">
         <div class="sidebar">
             <a href="/frontend/customers/profile" {% if page == 'profile' %}class="active"{% endif %}>My Profile</a>
+            <a href="/frontend/customers/orders" {% if page == 'orders' %}class="active"{% endif %}>My Orders</a>
             <a href="/frontend/customers/coupons" {% if page == 'coupons' %}class="active"{% endif %}>My Coupons</a>
             <form action="/auth/logout" method="post">
                 <button type="submit">Logout</button>

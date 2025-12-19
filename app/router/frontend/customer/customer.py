@@ -41,6 +41,13 @@ async def get_customer_orders(
     db: AsyncSession = Depends(get_db_session),
 ):
     token_payload, customer = login_data
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except Exception:
+        pass
+
     list_order_error = None
     try:
         orders = await get_orders_by_customer_account(db=db, customer_account=customer.account)
@@ -73,6 +80,8 @@ async def get_customer_orders(
         "orders": order_dicts,
         "list_order_error": list_order_error,
         "checkout_succeeds": checkout_succeeds,
+        "cart_count": cart_count,
+        "page": "orders",
     }
 
     return templates.TemplateResponse(
