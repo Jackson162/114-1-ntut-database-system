@@ -10,17 +10,23 @@
     <a href="/book/{{ book.book_id }}" class="book-title">{{ book.title }}</a>
 	
     <br>
-
     {# Author #}
-    <span class="book-author">{{ book.author }}</span>
-    
+    <span class="book-author">by {{ book.author }}</span>
+
+    <div class="book-details">
+        <strong>Publisher:</strong> {{ book.publisher }}<br>
+        <strong>ISBN:</strong> {{ book.isbn }}<br>
+        <strong>Published at:</strong> {{ book.publish_date or 'N/A' }}<br>
+        <strong>Category:</strong> {{ book.category or 'N/A' }}
+    </div>
+
     {# Price #}
-    <div class="book-price">$ {{ book.min_price }}</div>
+    <div class="book-price">$ {{ book.price }}</div>
     
     {# Add to cart button (requires JavaScript handling) #}
     <button class="add-to-cart-btn" 
         data-book-id="{{ book.book_id }}"
-        data-min-price="{{ book.min_price }}"
+        data-min-price="{{ book.price }}"
         data-bookstore-id="{{ book.bookstore_id }}"> 
         Add to Cart
     </button>

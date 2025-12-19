@@ -108,9 +108,13 @@ def group_results_by_bookstore(rows) -> dict[str, list[dict[str, any]]]:
                 "title": book.title,
                 "author": book.author,
                 "image_url": "/static/book.png",
-                "min_price": mapping.price,  # 前端 book_card 使用 min_price 變數名
+                "price": mapping.price,
                 "bookstore_id": bookstore.bookstore_id,
                 "bookstore_name": bookstore.name,
+                "category": book.category,
+                "publish_date": book.publish_date,
+                "isbn": book.isbn,
+                "publisher": book.publisher,
             }
         )
     return grouped

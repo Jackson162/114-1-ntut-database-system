@@ -127,7 +127,7 @@
         /* --- Styles for Search Results (Grid) --- */
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
             padding-bottom: 15px;
         }
@@ -142,13 +142,15 @@
         /* If book_card.jinja relies on external CSS, ensure it's here. 
            Currently book_card styles seem to be in home.jinja mostly. */
         .book-card {
-            flex: 0 0 180px; /* Relevant for scroll wrapper */
+            flex: 0 0 220px; /* Relevant for scroll wrapper */
             background-color: white;
             border-radius: 6px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             padding: 10px;
             text-align: center;
             transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
             /* For grid, width is handled by grid-template-columns */
         }
         /* Override flex for grid items to fill space */
@@ -175,14 +177,23 @@
             font-size: 14px;
             font-weight: bold;
             color: #0056b3;
-            height: 35px;
-            overflow: hidden;
             margin-bottom: 4px;
         }
         .book-author {
             font-size: 12px;
             color: #666;
             margin-bottom: 8px;
+        }
+        .book-details {
+            font-size: 11px;
+            color: #555;
+            text-align: left;
+            margin: 8px 0;
+            padding: 0 5px;
+            flex-grow: 1;
+        }
+        .book-details strong {
+            color: #333;
         }
         .book-price {
             font-size: 16px;

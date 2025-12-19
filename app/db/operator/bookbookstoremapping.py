@@ -97,6 +97,7 @@ async def delete_book_bookstore_mapping(
 
     return result.scalars().one()
 
+
 async def search_books_with_mappings(db: AsyncSession, keyword: str):
     """
     搜尋書籍並回傳所有書店的販售資訊 (Book + Mapping)
@@ -104,16 +105,12 @@ async def search_books_with_mappings(db: AsyncSession, keyword: str):
     stmt = (
         select(Book, BookBookstoreMapping)
         .join(BookBookstoreMapping, Book.book_id == BookBookstoreMapping.book_id)
-        .where(
-            or_(
-                Book.title.ilike(f"%{keyword}%"),
-                Book.author.ilike(f"%{keyword}%")
-            )
-        )
-        .order_by(BookBookstoreMapping.price.asc()) # 搜尋結果依價格排序
+        .where(or_(Book.title.ilike(f"%{keyword}%"), Book.author.ilike(f"%{keyword}%")))
+        .order_by(BookBookstoreMapping.price.asc())  # 搜尋結果依價格排序
     )
     result = await db.execute(stmt)
-    return result.all() # 回傳 list of (Book, BookBookstoreMapping) tuples
+    return result.all()  # 回傳 list of (Book, BookBookstoreMapping) tuples
+
 
 async def get_new_arrivals_with_mappings(db: AsyncSession, limit: int = 10):
     """
@@ -126,8 +123,9 @@ async def get_new_arrivals_with_mappings(db: AsyncSession, limit: int = 10):
         .limit(limit)
     )
     result = await db.execute(stmt)
-    return result.all() # 回傳 list of (Book, BookBookstoreMapping) tuples
-    
+    return result.all()  # 回傳 list of (Book, BookBookstoreMapping) tuples
+
+
 async def get_book_display_data(db: AsyncSession, book):
     # 查詢該書的 mapping，依價格低到高排序，取第一筆 (最低價)
     stmt = (
@@ -138,14 +136,14 @@ async def get_book_display_data(db: AsyncSession, book):
     )
     result = await db.execute(stmt)
     mapping = result.scalars().first()
-    
+
     return {
         "book_id": book.book_id,
         "title": book.title,
         "author": book.author,
-        "image_url": "https://placehold.co/180x120", # Placeholder image
-        "min_price": mapping.price if mapping else "N/A",
-        "bookstore_id": mapping.bookstore_id if mapping else None # 關鍵：加入 bookstore_id
+        "image_url": "https://placehold.co/180x120",  # Placeholder image
+        "price": mapping.price if mapping else "N/A",
+        "bookstore_id": mapping.bookstore_id if mapping else None,  # 關鍵：加入 bookstore_id
     }
 
 
@@ -158,16 +156,12 @@ async def search_books_with_bookstore_details(db: AsyncSession, keyword: str):
         select(Book, BookBookstoreMapping, Bookstore)
         .join(BookBookstoreMapping, Book.book_id == BookBookstoreMapping.book_id)
         .join(Bookstore, BookBookstoreMapping.bookstore_id == Bookstore.bookstore_id)
-        .where(
-            or_(
-                Book.title.ilike(f"%{keyword}%"),
-                Book.author.ilike(f"%{keyword}%")
-            )
-        )
-        .order_by(Bookstore.name, Book.title) # 依書店排序，方便前端分組
+        .where(or_(Book.title.ilike(f"%{keyword}%"), Book.author.ilike(f"%{keyword}%")))
+        .order_by(Bookstore.name, Book.title)  # 依書店排序，方便前端分組
     )
     result = await db.execute(stmt)
     return result.all()
+
 
 async def get_new_arrivals_with_bookstore_details(db: AsyncSession, limit: int = 20):
     """
@@ -182,6 +176,3 @@ async def get_new_arrivals_with_bookstore_details(db: AsyncSession, limit: int =
     )
     result = await db.execute(stmt)
     return result.all()
-    
-
-
