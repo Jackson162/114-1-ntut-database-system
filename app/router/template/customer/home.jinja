@@ -127,7 +127,7 @@
         /* --- Styles for Search Results (Grid) --- */
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
             padding-bottom: 15px;
         }
@@ -142,13 +142,15 @@
         /* If book_card.jinja relies on external CSS, ensure it's here. 
            Currently book_card styles seem to be in home.jinja mostly. */
         .book-card {
-            flex: 0 0 180px; /* Relevant for scroll wrapper */
+            flex: 0 0 220px; /* Relevant for scroll wrapper */
             background-color: white;
             border-radius: 6px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             padding: 10px;
             text-align: center;
             transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
             /* For grid, width is handled by grid-template-columns */
         }
         /* Override flex for grid items to fill space */
@@ -175,14 +177,23 @@
             font-size: 14px;
             font-weight: bold;
             color: #0056b3;
-            height: 35px;
-            overflow: hidden;
             margin-bottom: 4px;
         }
         .book-author {
             font-size: 12px;
             color: #666;
             margin-bottom: 8px;
+        }
+        .book-details {
+            font-size: 11px;
+            color: #555;
+            text-align: left;
+            margin: 8px 0;
+            padding: 0 5px;
+            flex-grow: 1;
+        }
+        .book-details strong {
+            color: #333;
         }
         .book-price {
             font-size: 16px;
@@ -200,8 +211,8 @@
             cursor: pointer;
             font-size: 13px;
         }
-		
-    /* 新增書店區塊樣式 */
+
+    /* Add bookstore block styles */
         .bookstore-block {
             margin-bottom: 30px;
             background-color: #fff;
@@ -228,23 +239,23 @@
     <div class="sticky-bar">
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
         <form class="search-container" action="/frontend/customers/home" method="get">
-            <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
+            <input type="text" name = "q" class="search-bar" placeholder="Search entire site..." value="{{ q }}">
             {% if q %}
               <a href="/frontend/customers/home" class="clear-btn" title="Clear Search">✕</a>
             {% endif %}
             <button type="submit" class="search-btn">Search</button>
         </form>
         <div class="nav-icons">
-            <a href="/frontend/customers/carts">購物車<span>{{ cart_count or 0 }}</span></a>
-            <a href="/frontend/customers/orders">訂單</a>
-            <a href="/frontend/customers/profile">個人頁面</a>
+            <a href="/frontend/customers/carts">Cart<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders">Orders</a>
+            <a href="/frontend/customers/profile">Profile</a>
         </div>
     </div>
 
     <div class="content-container">
         
         {% if q %}
-            <h2 class="section-title">搜尋結果: "{{ q }}"</h2>
+            <h2 class="section-title">Search Results: "{{ q }}"</h2>
             
             {% if grouped_books %}
                 {% for store_name, books in grouped_books.items() %}
@@ -258,12 +269,12 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="no-results">找不到相關書籍。</div>
+                <div class="no-results">No Relevent Books Found</div>
             {% endif %}
 
         {% else %}
             {% if bestsellers %}
-            <h2 class="section-title">🔥 熱門推薦 (Bestsellers)</h2>
+            <h2 class="section-title">🔥 Bestsellers</h2>
             <div class="books-scroll-wrapper">
                 {% for book in bestsellers %}
                     {% include 'customer/book_card.jinja' %}
@@ -271,7 +282,7 @@
             </div>
             {% endif %}
         
-            <h2 class="section-title">✨ 最新上架 (New Arrivals)</h2>
+            <h2 class="section-title">✨ All Books</h2>
             
             {% if grouped_new_arrivals %}
                 {% for store_name, books in grouped_new_arrivals.items() %}
@@ -285,11 +296,11 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <p style="color:#999; margin-left:10px;">暫無新書</p>
+                <p style="color:#999; margin-left:10px;">No books yet.</p>
             {% endif %}
 
             {% if promotions %}
-            <h2 class="section-title">🏷️ 促銷中 (On Sale)</h2>
+            <h2 class="section-title">🏷️ On Sale</h2>
             <div class="books-scroll-wrapper">
                 {% for book in promotions %}
                     {% include 'customer/book_card.jinja' %}
@@ -310,7 +321,7 @@
                     const bookstoreId = event.target.dataset.bookstoreId; 
                
                     if (!bookstoreId || bookstoreId === 'None' || bookstoreId === 'null') {
-                        alert('此商品目前無法購買（無供應商資訊）。');
+                        alert('This item cannot be purchased at this time (no supplier information).');
                         return;
                     }
 
@@ -326,15 +337,15 @@
                             body: formData 
                         });
                         if (response.ok) {
-                            alert('商品已加入購物車！');
+                            alert('Item has been added to the cart!');
                             window.location.reload(); 
                         } else {
                             const result = await response.json();
-                            alert('加入購物車失敗: ' + (result.error || '未知錯誤'));
+                            alert('Failed to add to cart: ' + (result.error || 'Unknown error'));
                         }
                     } catch (error) {
-                        console.error('API 錯誤:', error);
-                        alert('網路錯誤，無法加入購物車。');
+                        console.error('API Error:', error);
+                        alert('Network error, could not add to cart.');
                     }
                 });
             });

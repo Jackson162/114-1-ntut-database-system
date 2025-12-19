@@ -90,7 +90,7 @@
         }
         .store-header::before { content: '🏪'; margin-right: 8px; }
         
-        /* 修改 table 樣式，移除底部的圓角，與 footer 接合 */
+        /* Modify table style, remove bottom border-radius to connect with footer */
         .cart-table { 
             width: 100%;
             border-collapse: collapse; 
@@ -102,7 +102,7 @@
             border-bottom: none;
         }
 
-        /* 新增每個書店的底部結帳區塊樣式 */
+        /* Add style for the footer checkout block for each bookstore */
         .store-footer {
             background-color: white;
             padding: 15px 20px;
@@ -234,9 +234,9 @@
     <div class="sticky-bar">
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
         <div class="nav-icons">
-            <a href="/frontend/customers/carts">購物車<span>{{ cart_count or 0 }}</span></a>
-            <a href="/frontend/customers/orders">訂單</a>
-            <a href="/frontend/customers/profile">個人頁面</a>
+            <a href="/frontend/customers/carts">Cart<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders">Orders</a>
+            <a href="/frontend/customers/profile">Profile</a>
         </div>
     </div>
 
@@ -368,7 +368,7 @@
             if (!confirm('Are you sure you want to remove this item?')) return;
 
             try {
-                // 修改處：使用反引號 ` ` 包裹 URL，這樣 ${cartItemId} 才會被正確替換
+                // Modification: Use backticks `` to wrap the URL so that ${cartItemId} is correctly substituted
                 const response = await fetch(`/customers/cart-items/${cartItemId}/delete`, {
                     method: 'POST'
                 });

@@ -1,27 +1,33 @@
 {# template/customer/book_card.jinja #}
 <div class="book-card">
     
-    {# 封面圖 (點擊跳轉至 /book/:book_id) #}
+    {# Cover image (click to navigate to /book/:book_id) #}
     <a href="/book/{{ book.book_id }}">
         <img src="{{ url_for('static', path='/book.png') }}" alt="{{ book.title }}">
     </a>
     
-    {# 書名 (點擊跳轉至 /book/:book_id) #}
+    {# Book title (click to navigate to /book/:book_id) #}
     <a href="/book/{{ book.book_id }}" class="book-title">{{ book.title }}</a>
 	
     <br>
+    {# Author #}
+    <span class="book-author">by {{ book.author }}</span>
 
-    {# 作者 #}
-    <span class="book-author">{{ book.author }}</span>
+    <div class="book-details">
+        <strong>Publisher:</strong> {{ book.publisher }}<br>
+        <strong>ISBN:</strong> {{ book.isbn }}<br>
+        <strong>Published at:</strong> {{ book.publish_date or 'N/A' }}<br>
+        <strong>Category:</strong> {{ book.category or 'N/A' }}
+    </div>
+
+    {# Price #}
+    <div class="book-price">$ {{ book.price }}</div>
     
-    {# 價格 #}
-    <div class="book-price">NT$ {{ book.min_price }}</div>
-    
-    {# 加入購物車按鈕 (需要 JavaScript 處理) #}
+    {# Add to cart button (requires JavaScript handling) #}
     <button class="add-to-cart-btn" 
         data-book-id="{{ book.book_id }}"
-        data-min-price="{{ book.min_price }}"
+        data-min-price="{{ book.price }}"
         data-bookstore-id="{{ book.bookstore_id }}"> 
-        加入購物車
+        Add to Cart
     </button>
 </div>

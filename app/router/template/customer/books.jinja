@@ -1,4 +1,4 @@
-/* 功能移至home */
+/* Functionality moved to home */
 <!DOCTYPE html>
 <html>
 <head>
@@ -135,7 +135,7 @@
         <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
         
         <form class="search-container" action="/frontend/customers/books" method="get">
-            <input type="text" name = "q" class="search-bar" placeholder="全站搜尋..." value="{{ q }}">
+            <input type="text" name = "q" class="search-bar" placeholder="Search entire site..." value="{{ q }}">
             
             {% if q %}
                 <a href="/frontend/customers/books" class="clear-btn" title="Clear Search">✕</a>
@@ -146,13 +146,13 @@
         
         <div class="nav-icons">
             <a href="/frontend/customers/cart">
-                購物車
+                Cart
                 <span>{{ cart_count or 0 }}</span>
             </a>
-            {# 訂單入口 (跳轉至 /customers/orders) #}
-            <a href="/frontend/customers/orders">訂單</a>
-            {# 個人頁面 (跳轉至 /customers/profile) #}
-            <a href="/frontend/customers/profile">個人頁面</a>
+            {# Orders link (redirects to /customers/orders) #}
+            <a href="/frontend/customers/orders">Orders</a>
+            {# Profile page (redirects to /customers/profile) #}
+            <a href="/frontend/customers/profile">Profile</a>
         </div>
     </div>
 

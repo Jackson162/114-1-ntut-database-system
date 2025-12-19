@@ -1,77 +1,327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>My Orders</title>
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        h1, h2 { color: #333; }
-        .container { max-width: 800px; margin: auto; }
-        .order { border: 1px solid #ccc; border-radius: 5px; padding: 1em; margin-bottom: 1em; }
-        .order-header { border-bottom: 1px solid #eee; padding-bottom: 0.5em; margin-bottom: 1em; }
-        .order-id { font-weight: bold; }
-        .order-date { color: #666; font-size: 0.9em; }
-        .order-items { list-style-type: none; padding-left: 0; }
-        .item { display: flex; justify-content: space-between; padding: 0.5em 0; border-bottom: 1px solid #f4f4f4; }
-        .item:last-child { border-bottom: none; }
-        .item-details { flex-grow: 1; }
-        .item-name { font-weight: 500; }
-        .item-qty, .item-price { color: #555; min-width: 80px; text-align: right; }
-        .total { text-align: right; font-weight: bold; margin-top: 1em; }
-        .error { color: red; border: 1px solid red; padding: 1em; border-radius: 5px; }
-        .no-orders { color: #777; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding-top: 80px; /* Space for sticky bar */
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .logo-home {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .nav-icons a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            position: relative;
+        }
+        .nav-icons span { 
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            line-height: 1;
+        }
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            gap: 20px;
+        }
+        .sidebar {
+            flex: 0 0 200px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .sidebar a, .sidebar button {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .sidebar a:hover, .sidebar button:hover {
+            background-color: #f0f0f0;
+        }
+        .sidebar a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .sidebar form {
+            margin: 0;
+        }
+        .content {
+            flex-grow: 1;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .content h1 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* New styles for orders page */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        .alert-danger {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+        .order-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden; /* To contain border-radius */
+        }
+        .order-header {
+            background-color: #f9f9f9;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .order-header-info span {
+            margin-right: 20px;
+        }
+        .order-header-info strong {
+            color: #555;
+        }
+        .order-status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 12px;
+            color: white;
+            text-transform: capitalize;
+        }
+        .order-status.delivering { background-color: #f0ad4e; }
+        .order-status.delivered { background-color: #5bc0de; }
+        .order-status.completed { background-color: #5cb85c; }
+        .order-header-tags {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .coupon-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .order-body {
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .order-items-list {
+            flex-grow: 1;
+        }
+        .order-shipping-info {
+            flex: 0 0 250px;
+            font-size: 14px;
+            background-color: #fdfdfd;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+        .order-shipping-info h3 {
+            margin-top: 0;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-item-img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+        .order-item-details {
+            flex-grow: 1;
+        }
+        .order-item-title {
+            font-weight: bold;
+            color: #0056b3;
+            text-decoration: none;
+        }
+        .order-item-author {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0;
+        }
+        .order-item-bookstore {
+            font-size: 12px;
+            color: #888;
+        }
+        .order-item-price-qty {
+            text-align: right;
+            font-size: 14px;
+            min-width: 100px;
+        }
+        .no-orders {
+            text-align: center;
+            padding: 50px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
+    <div class="sticky-bar">
+        <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
+        <div class="nav-icons">
+            <a href="/frontend/customers/carts">Cart<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders" style="font-weight: bold;">Orders</a>
+            <a href="/frontend/customers/profile">Profile</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>My Orders</h1>
-        <p>Welcome, {{ customer.name }}!</p>
+        <div class="sidebar">
+            <a href="/frontend/customers/profile" {% if page == 'profile' %}class="active"{% endif %}>My Profile</a>
+            <a href="/frontend/customers/orders" {% if page == 'orders' %}class="active"{% endif %}>My Orders</a>
+            <a href="/frontend/customers/coupons" {% if page == 'coupons' %}class="active"{% endif %}>My Coupons</a>
+            <form action="/auth/logout" method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+        <div class="content">
+            <h1>My Orders</h1>
 
-        {% if list_order_error %}
-            <div class="error">
-                <p>Sorry, we couldn't load your orders at this time.</p>
-                <p><strong>Error:</strong> {{ list_order_error }}</p>
+            {% if checkout_succeeds %}
+            <div class="alert alert-success">
+                Your order has been placed successfully!
             </div>
-        {% endif %}
+            {% endif %}
 
-        {% if checkout_succeed %}
-            <div class="checkout_succeeds">
-                <p>Checkout Succeeds! We will process your order ASAP.</p>
+            {% if list_order_error %}
+            <div class="alert alert-danger">
+                Error loading orders: {{ list_order_error }}
             </div>
-        {% endif %}
+            {% endif %}
 
-        
-
-        {% if orders %}
-            {% for order in orders %}
-                <div class="order">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-card">
                     <div class="order-header">
-                        <span class="order-id">Order #{{ order.order_id }}</span> |
-                        <span class="order-time">Placed on: {{ order.order_time.strftime('%Y-%m-%d %H:%M') }}</span> |
-                        <span>Status: {{ order.status }}</span>
+                        <div class="order-header-info">
+                            <span><strong>Order Date:</strong> {{ order.order_time }}</span>
+                            <span><strong>Order ID:</strong> {{ order.order_id }}</span>
+                            <span><strong>Total:</strong> ${{ "%.2f"|format(order.total_price) }}</span>
+                        </div>
+                        <div class="order-header-tags">
+                            {% if order.coupon %}
+                            <span class="coupon-badge">Coupon: {{ order.coupon.name }}</span>
+                            {% endif %}
+                            <div class="order-status {{ order.status }}">
+                                {{ order.status }}
+                            </div>
+                        </div>
                     </div>
-
-                    <ul class="order-items">
-                        {% for item in order.order_items %}
-                            <li class="item">
-                                <div class="item-details">
-                                    <span class="item-title">{{ item.book.title }}</span>
+                    <div class="order-body">
+                        <div class="order-items-list">
+                            {% for item in order.order_items %}
+                            <div class="order-item">
+                                <img src="{{ url_for('static', path='/book.png') }}" alt="{{ item.book.title }}" class="order-item-img">
+                                <div class="order-item-details">
+                                    <a href="/book/{{ item.book.book_id }}" class="order-item-title">{{ item.book.title }}</a>
+                                    <div class="order-item-author">by {{ item.book.author }}</div>
+                                    <div class="order-item-bookstore">Sold by: {{ item.bookstore.name }}</div>
                                 </div>
-                                <div class="item-qty">Qty: {{ item.quantity }}</div>
-                                <div class="item-price">${{ "%.2f"|format(item.price) }}</div>
-                            </li>
-                        {% else %}
-                            <li>This order has no items.</li>
-                        {% endfor %}
-                    </ul>
-                     <div class="total">
-                        Total: ${{ "%.2f"|format(order.total_price) }}
+                                <div class="order-item-price-qty">
+                                    <div>Price: ${{ "%.2f"|format(item.price) }}</div>
+                                    <div>Quantity: {{ item.quantity }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="order-shipping-info">
+                            <h3>Shipping Details</h3>
+                            <p>
+                                <strong>Recipient:</strong> {{ order.recipient_name }}<br>
+                                <strong>Address:</strong> {{ order.shipping_address }}<br>
+                                <strong>Shipping Fee:</strong> ${{ "%.2f"|format(order.shipping_fee) }}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            {% endfor %}
-        {% else %}
-            <p class="no-orders">You have not placed any orders yet.</p>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="no-orders">
+                    <p>You have not placed any orders yet.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
