@@ -5,11 +5,13 @@ from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy import select
 
 from app.middleware.depends import validate_token_by_role
 from app.middleware.db_session import get_db_session
 from app.enum.user import UserRole
 from app.db.models.customer import Customer
+from app.db.models.bookstore import Bookstore
 from app.db.operator.order import get_orders_by_customer_account
 from app.db.operator.coupon import (
     get_active_admin_coupons,
@@ -332,12 +334,86 @@ async def customer_logout():
 async def checkout_page(
     request: Request,
     checkout_error: Optional[str] = None,
-    bookstore_id: Optional[UUID] = None,  # 新增接收 bookstore_id
+    bookstore_id: Optional[UUID] = None,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
 ):
+    if not bookstore_id:
+        return RedirectResponse(
+            url="/frontend/customers/carts?error=no_bookstore_selected",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    _, customer = login_data
+
+    cart_count = 0
+    try:
+        cart_count = await get_cart_item_count(db, customer.account)
+    except Exception:
+        pass
+
+    bookstore_result = await db.execute(
+        select(Bookstore).where(Bookstore.bookstore_id == bookstore_id)
+    )
+    bookstore = bookstore_result.scalar_one_or_none()
+
+    if not bookstore:
+        return RedirectResponse(
+            url="/frontend/customers/carts?error=bookstore_not_found",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    rows = await get_cart_details(db, customer.account)
+
+    checkout_items = []
+    items_total_price = 0.0
+
+    for row in rows:
+        if str(row[6]) == str(bookstore_id):
+            quantity = row[1]
+            price = row[8]
+            subtotal = price * quantity
+            items_total_price += subtotal
+
+            checkout_items.append(
+                {
+                    "cart_item_id": row[0],
+                    "quantity": quantity,
+                    "book_id": row[2],
+                    "title": row[3],
+                    "author": row[4],
+                    "image_url": "/static/book.png",
+                    "bookstore_id": row[6],
+                    "bookstore_name": row[7],
+                    "price": price,
+                    "stock": row[9],
+                    "subtotal": subtotal,
+                }
+            )
+
+    if not checkout_items:
+        return RedirectResponse(
+            url=(
+                f"/frontend/customers/carts"
+                f"?error=no_items_for_this_bookstore&bookstore_id={bookstore_id}"
+            ),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    shipping_fee = bookstore.shipping_fee
+    grand_total = items_total_price + shipping_fee
+
     context = {
         "request": request,
         "checkout_error": checkout_error,
-        "bookstore_id": bookstore_id,  # 傳遞給 template
+        "bookstore_id": bookstore_id,
+        "bookstore_name": bookstore.name,
+        "checkout_items": checkout_items,
+        "items_total_price": items_total_price,
+        "shipping_fee": shipping_fee,
+        "grand_total": grand_total,
+        "cart_count": cart_count,
+        "customer": customer,
     }
 
     return templates.TemplateResponse(

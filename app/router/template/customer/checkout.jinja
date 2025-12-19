@@ -1,35 +1,258 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Checkout</title>
+    <title>Checkout - {{ bookstore_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding-top: 80px; /* Space for sticky bar */
+            background-color: #f8f9fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* --- Reuse Header Styles from Home --- */
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .logo-home {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .nav-icons a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            position: relative;
+        }
+        .nav-icons span { 
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            line-height: 1;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .checkout-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .checkout-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2c3e50;
+        }
+        .checkout-header a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section, .summary-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .form-section h2, .summary-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .place-order-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100%;
+            transition: background-color 0.2s;
+            display: block;
+            text-align: center;
+        }
+        .place-order-btn:hover {
+            background-color: #218838;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .summary-item .item-name {
+            color: #333;
+            flex: 1;
+            padding-right: 10px;
+        }
+        .summary-item .item-price {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            color: #d9534f;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 15px 0;
+        }
+        .error {
+            color: red;
+            background-color: #fdd;
+            border: 1px solid red;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>填寫收件資訊</h1>
-
-    {% if checkout_error %}
-        <div class="error" style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 10px;">
-            <h3>Checkout Fails!!!</h3>
-            <p>Error: {{ checkout_error }}</p>
+    <div class="sticky-bar">
+        <a href="/frontend/customers/home" class="logo-home">Bookstore</a>
+        <div class="nav-icons">
+            <a href="/frontend/customers/carts">購物車<span>{{ cart_count or 0 }}</span></a>
+            <a href="/frontend/customers/orders">訂單</a>
+            <a href="/frontend/customers/profile">個人頁面</a>
         </div>
-    {% endif %}
+    </div>
 
-    <form method="post" action="/customers/orders/create">
-        
-        <input type="hidden" name="bookstore_id" value="{{ bookstore_id or '' }}">
-        
-        <label for="coupon_id">Coupon ID (Optional):</label><br>
-        <input type="text" id="coupon_id" name="coupon_id" value=""><br><br>
+    <div class="container">
+        <div class="checkout-header">
+            <h1>Checkout</h1>
+            <a href="/frontend/customers/carts">← Back to Cart</a>
+        </div>
 
-        <label for="recipient_name">recipient_name:</label><br>
-        <input type="text" id="recipient_name" name="recipient_name" value="{{ recipient_name or '' }}" required><br><br>
+        {% if checkout_error %}
+            <div class="error">
+                <strong>Checkout Failed!</strong>
+                <p>Error: {{ checkout_error }}</p>
+            </div>
+        {% endif %}
 
-        <label for="recipient_address">recipient_address:</label><br>
-        <input type="text" id="recipient_address" name="recipient_address" value="{{ recipient_address or '' }}" required><br><br>
+        <div class="checkout-layout">
+            <div class="form-section">
+                <h2>Shipping & Payment</h2>
+                <form method="post" action="/customers/orders/create">
+                    <input type="hidden" name="bookstore_id" value="{{ bookstore_id or '' }}">
+                    
+                    <div class="form-group">
+                        <label for="recipient_name">Recipient Name</label>
+                        <input type="text" id="recipient_name" name="recipient_name" value="{{ customer.name or recipient_name or '' }}" required>
+                    </div>
 
-        <input type="submit" value="Check Out">
-    </form>
-    
-    <br>
-    <a href="/frontend/customers/carts">Back To Cart</a>
+                    <div class="form-group">
+                        <label for="recipient_address">Shipping Address</label>
+                        <input type="text" id="recipient_address" name="recipient_address" value="{{ recipient_address or '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="coupon_id">Coupon ID (Optional)</label>
+                        <input type="text" id="coupon_id" name="coupon_id" value="">
+                    </div>
+
+                    <button type="submit" class="place-order-btn">Place Order</button>
+                </form>
+            </div>
+
+            <div class="summary-section">
+                <h2>Order from {{ bookstore_name }}</h2>
+                {% for item in checkout_items %}
+                <div class="summary-item">
+                    <span class="item-name">{{ item.title }} (x{{ item.quantity }})</span>
+                    <span class="item-price">${{ "%.2f"|format(item.subtotal) }}</span>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <span>${{ "%.2f"|format(items_total_price) }}</span>
+                </div>
+                <div class="summary-line">
+                    <span>Shipping Fee</span>
+                    <span>${{ "%.2f"|format(shipping_fee) }}</span>
+                </div>
+                <hr>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span>${{ "%.2f"|format(grand_total) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
