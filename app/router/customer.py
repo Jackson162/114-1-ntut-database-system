@@ -256,3 +256,25 @@ async def create_customer_order(
             ),
             status_code=status.HTTP_303_SEE_OTHER,
         )
+
+
+@router.post("/profile/update")
+async def update_customer_profile(
+    name: Annotated[str, Form()],
+    email: Annotated[str, Form()],
+    phone: Annotated[str, Form()],
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, customer = login_data
+
+    customer.name = name
+    customer.email = email
+    customer.phone_number = phone
+
+    await db.commit()
+
+    return RedirectResponse(
+        url="/frontend/customers/profile",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )

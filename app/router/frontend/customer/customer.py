@@ -1,6 +1,6 @@
-from typing import Tuple, Optional, Annotated
+from typing import Tuple, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Request, status, Form
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -81,9 +81,10 @@ async def get_customer_orders(
 
 
 @router.get("/books")
-async def search_books_redirect(q: Optional[str] = None):
-    from fastapi.responses import RedirectResponse
-
+async def search_books_redirect(
+    q: Optional[str] = None,
+    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
+):
     url = "/frontend/customers/home"
     if q:
         url += f"?q={q}"
@@ -260,28 +261,6 @@ async def customer_profile_page(
         "/customer/profile.jinja",
         context=context,
         status_code=status.HTTP_200_OK,
-    )
-
-
-@router.post("/profile/update")
-async def update_customer_profile(
-    name: Annotated[str, Form()],
-    email: Annotated[str, Form()],
-    phone: Annotated[str, Form()],
-    login_data: Tuple[JwtPayload, Customer] = Depends(validate_customer_token),
-    db: AsyncSession = Depends(get_db_session),
-):
-    _, customer = login_data
-
-    customer.name = name
-    customer.email = email
-    customer.phone_number = phone
-
-    await db.commit()
-
-    return RedirectResponse(
-        url="/frontend/customers/profile",
-        status_code=status.HTTP_303_SEE_OTHER,
     )
 
 

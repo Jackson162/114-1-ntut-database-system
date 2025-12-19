@@ -1,14 +1,15 @@
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
 from datetime import date
-from typing import Optional, List
 from uuid import UUID
+
 
 from sqlalchemy import select, insert, delete
 from sqlalchemy.orm import joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.coupon import Coupon
 from app.enum.coupon import CouponType
 from app.enum.user import UserRole
+from app.db.models.staff import Staff
 
 
 async def get_coupon_by_id(db: AsyncSession, coupon_id: UUID):
@@ -20,12 +21,10 @@ async def get_coupon_by_id(db: AsyncSession, coupon_id: UUID):
 async def get_active_admin_coupons(db: AsyncSession):
     stmt = (
         select(Coupon)
-        .where(Coupon.staff == None)  
+        .where(Coupon.admin_account.is_not(None))
         .where(Coupon.start_date <= date.today())
-        .where(
-            (Coupon.end_date.is_(None)) |
-            (Coupon.end_date > date.today())
-        )
+        .where((Coupon.end_date.is_(None)) | (Coupon.end_date > date.today()))
+        .options(joinedload(Coupon.admin))
     )
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -34,19 +33,13 @@ async def get_active_admin_coupons(db: AsyncSession):
 async def get_active_bookstore_coupons(db: AsyncSession):
     stmt = (
         select(Coupon)
-        .where(Coupon.staff != None)  
+        .where(Coupon.staff_account.is_not(None))
         .where(Coupon.start_date <= date.today())
-        .where(
-            (Coupon.end_date.is_(None)) |
-            (Coupon.end_date > date.today())
-        )
+        .where((Coupon.end_date.is_(None)) | (Coupon.end_date > date.today()))
+        .options(joinedload(Coupon.staff).options(joinedload(Staff.bookstore)))
     )
     result = await db.execute(stmt)
     return result.scalars().all()
-
-    query = select(Coupon).where(Coupon.coupon_id == coupon_id).options(joinedload(Coupon.staff))
-    result = await db.execute(query)
-    return result.scalars().one_or_none()
 
 
 async def create_coupon(
@@ -103,4 +96,3 @@ async def delete_coupon(db: AsyncSession, coupon_id: UUID):
     query = delete(Coupon).where(Coupon.coupon_id == coupon_id).returning(Coupon)
     result = await db.execute(query)
     return result.scalars().one_or_none()
-
