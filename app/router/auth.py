@@ -1,6 +1,6 @@
 from typing import Optional, Annotated
 from fastapi import APIRouter, Depends, Form, status
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
@@ -56,7 +56,7 @@ async def register(
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/login", response_class=HTMLResponse)
+@router.post("/login", response_class=JSONResponse)
 async def login(
     login_data: LoginData,
     db: AsyncSession = Depends(get_db_session),
@@ -111,7 +111,7 @@ async def login(
         )
 
 
-@router.post("/logout", response_class=HTMLResponse)
+@router.post("/logout", response_class=RedirectResponse)
 async def logout():
     redirect_url = "/frontend/auth/login"
     response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

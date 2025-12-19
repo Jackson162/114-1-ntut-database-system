@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
+from fastapi.responses import RedirectResponse
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import PlainTextResponse
 from starlette import status
@@ -23,6 +25,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+router = APIRouter()
+
+
+@router.get("/")
+async def logout():
+    redirect_url = "/frontend/auth/login"
+    response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    return response
+
+
+app.include_router(router, tags=["main"])
 app.include_router(frontend.router, prefix="/frontend", tags=["frontend"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(staff.router, prefix="/staffs", tags=["staffs"])
