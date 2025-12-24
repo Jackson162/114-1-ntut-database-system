@@ -1,6 +1,5 @@
 from typing import Tuple, Optional
 from datetime import datetime
-from collections import defaultdict
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
@@ -221,9 +220,8 @@ async def get_staff_statistics(
 ):
     _, staff = login_data
 
-    daily_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
-    weekly_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
-    monthly_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
+    total_revenue = 0
+    total_books_sold = 0
 
     filter_start = None
     filter_end = None
@@ -242,11 +240,13 @@ async def get_staff_statistics(
         orders = await get_orders_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
 
         for order in orders:
-            if not getattr(order, "created_at", None):
+            if not getattr(order, "order_time", None):
                 continue
 
-            date_obj = order.created_at
-            order_date = date_obj.date()
+            order_date = order.order_time
+            # Ensure it is a date object (in case driver returns datetime)
+            if isinstance(order_date, datetime):
+                order_date = order_date.date()
 
             if filter_start and order_date < filter_start:
                 continue
@@ -259,38 +259,19 @@ async def get_staff_statistics(
                     revenue = item.price * item.quantity
                     books_sold = item.quantity
 
-                    # Daily
-                    day_key = date_obj.strftime("%Y-%m-%d")
-                    daily_stats[day_key]["revenue"] += revenue
-                    daily_stats[day_key]["books_sold"] += books_sold
-
-                    # Weekly
-                    year, week, _ = date_obj.isocalendar()
-                    week_key = f"{year}-W{week:02d}"
-                    weekly_stats[week_key]["revenue"] += revenue
-                    weekly_stats[week_key]["books_sold"] += books_sold
-
-                    # Monthly
-                    month_key = date_obj.strftime("%Y-%m")
-                    monthly_stats[month_key]["revenue"] += revenue
-                    monthly_stats[month_key]["books_sold"] += books_sold
+                    total_revenue += revenue
+                    total_books_sold += books_sold
 
     except Exception as err:
         logger.error(f"Error calculating statistics: {err}")
-
-    def format_stats(stats):
-        return [
-            {"period": k, **v} for k, v in sorted(stats.items(), key=lambda x: x[0], reverse=True)
-        ]
 
     context = {
         "request": request,
         "staff": staff,
         "start_date": start_date,
         "end_date": end_date,
-        "daily_stats": format_stats(daily_stats),
-        "weekly_stats": format_stats(weekly_stats),
-        "monthly_stats": format_stats(monthly_stats),
+        "total_revenue": total_revenue,
+        "total_books_sold": total_books_sold,
     }
 
     return templates.TemplateResponse(

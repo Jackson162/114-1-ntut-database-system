@@ -4,7 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Statistics</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            padding-top: 70px; /* Adjust for fixed navbar */
+            background-color: #f8f9fa;
+        }
+        .navbar.bg-custom-green {
+            background-color: #4CAF50 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .section-title {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .filter-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -29,9 +55,6 @@
                         <a class="nav-link" href="/frontend/staffs/coupons">Coupons</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/frontend/staffs/coupons">Coupons</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link active" href="/frontend/staffs/statistics">Statistics</a>
                     </li>
                 </ul>
@@ -45,109 +68,48 @@
     </nav>
 
     <div class="container">
-        <h2 class="mb-4">Sales Statistics</h2>
+        <h1 class="section-title">Sales Statistics</h1>
 
-        <form method="GET" action="/frontend/staffs/statistics" class="row g-3 mb-4 align-items-end">
-            <div class="col-auto">
-                <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date or '' }}">
-            </div>
-            <div class="col-auto">
-                <label for="end_date" class="form-label">End Date</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date or '' }}">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Filter</button>
-            </div>
-            <div class="col-auto">
-                <a href="/staff/statistics" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
+        <div class="filter-card">
+            <form method="GET" action="/frontend/staffs/statistics" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date or '' }}">
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                    <a href="/frontend/staffs/statistics" class="btn btn-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
 
-        <ul class="nav nav-tabs" id="statsTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab">Daily</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" type="button" role="tab">Weekly</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" type="button" role="tab">Monthly</button>
-            </li>
-        </ul>
-
-        <div class="tab-content mt-3" id="statsTabContent">
-            <!-- Daily Stats -->
-            <div class="tab-pane fade show active" id="daily" role="tabpanel">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Books Sold</th>
-                            <th>Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for stat in daily_stats %}
-                        <tr>
-                            <td>{{ stat.period }}</td>
-                            <td>{{ stat.books_sold }}</td>
-                            <td>${{ stat.revenue }}</td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="3">No data available</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+                <div class="card text-center h-100 border-primary shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Total Books Sold</h5>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center py-5">
+                        <h3 class="display-4 fw-bold text-primary">{{ total_books_sold }}</h3>
+                    </div>
+                </div>
             </div>
-            <!-- Weekly Stats -->
-            <div class="tab-pane fade" id="weekly" role="tabpanel">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Week</th>
-                            <th>Books Sold</th>
-                            <th>Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for stat in weekly_stats %}
-                        <tr>
-                            <td>{{ stat.period }}</td>
-                            <td>{{ stat.books_sold }}</td>
-                            <td>${{ stat.revenue }}</td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="3">No data available</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <!-- Monthly Stats -->
-            <div class="tab-pane fade" id="monthly" role="tabpanel">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Books Sold</th>
-                            <th>Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for stat in monthly_stats %}
-                        <tr>
-                            <td>{{ stat.period }}</td>
-                            <td>{{ stat.books_sold }}</td>
-                            <td>${{ stat.revenue }}</td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="3">No data available</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="col-md-6 mb-4">
+                <div class="card text-center h-100 border-success shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">Total Revenue</h5>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center py-5">
+                        <h3 class="display-4 fw-bold text-success">${{ total_revenue }}</h3>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
