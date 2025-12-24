@@ -269,7 +269,7 @@ async def seed_data():
             customer_name=customer.name,
             customer_phone_number=customer.phone_number,
             customer_email=customer.email,
-            status=OrderStatus.DELIVERING.value,
+            status=OrderStatus.RECEIVED.value,
             total_price=total_price,
             shipping_address=customer.address,
             shipping_fee=bookstore.shipping_fee,
