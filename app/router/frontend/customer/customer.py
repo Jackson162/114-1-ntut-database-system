@@ -402,6 +402,17 @@ async def checkout_page(
     shipping_fee = bookstore.shipping_fee
     grand_total = items_total_price + shipping_fee
 
+    # Fetch available coupons
+    admin_coupons = await get_active_admin_coupons(db)
+    all_bookstore_coupons = await get_active_bookstore_coupons(db)
+
+    # Filter bookstore coupons for the current bookstore
+    applicable_bookstore_coupons = [
+        c for c in all_bookstore_coupons if c.staff and c.staff.bookstore_id == bookstore_id
+    ]
+
+    available_coupons = admin_coupons + applicable_bookstore_coupons
+
     context = {
         "request": request,
         "checkout_error": checkout_error,
@@ -413,6 +424,7 @@ async def checkout_page(
         "grand_total": grand_total,
         "cart_count": cart_count,
         "customer": customer,
+        "available_coupons": available_coupons,
     }
 
     return templates.TemplateResponse(

@@ -238,7 +238,7 @@ async def create_customer_order(
             db=db, cart_item_ids=[item.cart_item_id for item in target_cart_items]
         )
 
-        # await db.commit()
+        await db.commit()
 
         # 8. 跳轉到訂單列表或成功頁面
         return RedirectResponse(

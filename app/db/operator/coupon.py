@@ -13,9 +13,9 @@ from app.db.models.staff import Staff
 
 
 async def get_coupon_by_id(db: AsyncSession, coupon_id: UUID):
-    stmt = select(Coupon).where(Coupon.coupon_id == coupon_id)
-    result = await db.execute(stmt)
-    return result.scalar_one_or_none()
+    query = select(Coupon).where(Coupon.coupon_id == coupon_id).options(joinedload(Coupon.staff))
+    result = await db.execute(query)
+    return result.scalars().one_or_none()
 
 
 async def get_active_admin_coupons(db: AsyncSession):
@@ -27,7 +27,7 @@ async def get_active_admin_coupons(db: AsyncSession):
         .options(joinedload(Coupon.admin))
     )
     result = await db.execute(stmt)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
 async def get_active_bookstore_coupons(db: AsyncSession):
@@ -39,7 +39,7 @@ async def get_active_bookstore_coupons(db: AsyncSession):
         .options(joinedload(Coupon.staff).options(joinedload(Staff.bookstore)))
     )
     result = await db.execute(stmt)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
 async def create_coupon(
