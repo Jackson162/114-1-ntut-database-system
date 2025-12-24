@@ -2,7 +2,7 @@
 Class definition for OrderItem
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, Integer, text, CheckConstraint
@@ -26,7 +26,7 @@ class OrderItem(Base):
         primary_key=True, server_default=text("gen_random_uuid()")
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    price: Mapped[Optional[int]] = mapped_column(Integer)
+    price: Mapped[int] = mapped_column(Integer)
 
     order_id: Mapped[UUID] = mapped_column(ForeignKey("order_.order_id"))
     book_bookstore_mapping_id: Mapped[UUID] = mapped_column(

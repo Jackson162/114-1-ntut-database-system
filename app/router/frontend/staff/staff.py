@@ -1,4 +1,6 @@
 from typing import Tuple, Optional
+from datetime import datetime
+from collections import defaultdict
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
@@ -206,4 +208,91 @@ async def get_staff_coupons(
 
     return templates.TemplateResponse(
         "/staff/coupons.jinja", context=context, status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/statistics")
+async def get_staff_statistics(
+    request: Request,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    login_data: Tuple[JwtPayload, Staff] = Depends(validate_staff_token),
+    db: AsyncSession = Depends(get_db_session),
+):
+    _, staff = login_data
+
+    daily_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
+    weekly_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
+    monthly_stats = defaultdict(lambda: {"revenue": 0, "books_sold": 0})
+
+    filter_start = None
+    filter_end = None
+    if start_date:
+        try:
+            filter_start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+    if end_date:
+        try:
+            filter_end = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    try:
+        orders = await get_orders_by_bookstore_id(db=db, bookstore_id=staff.bookstore_id)
+
+        for order in orders:
+            if not getattr(order, "created_at", None):
+                continue
+
+            date_obj = order.created_at
+            order_date = date_obj.date()
+
+            if filter_start and order_date < filter_start:
+                continue
+            if filter_end and order_date > filter_end:
+                continue
+
+            for item in order.order_items:
+                # Ensure we only count items belonging to this staff's bookstore
+                if item.book_bookstore_mapping.bookstore_id == staff.bookstore_id:
+                    revenue = item.price * item.quantity
+                    books_sold = item.quantity
+
+                    # Daily
+                    day_key = date_obj.strftime("%Y-%m-%d")
+                    daily_stats[day_key]["revenue"] += revenue
+                    daily_stats[day_key]["books_sold"] += books_sold
+
+                    # Weekly
+                    year, week, _ = date_obj.isocalendar()
+                    week_key = f"{year}-W{week:02d}"
+                    weekly_stats[week_key]["revenue"] += revenue
+                    weekly_stats[week_key]["books_sold"] += books_sold
+
+                    # Monthly
+                    month_key = date_obj.strftime("%Y-%m")
+                    monthly_stats[month_key]["revenue"] += revenue
+                    monthly_stats[month_key]["books_sold"] += books_sold
+
+    except Exception as err:
+        logger.error(f"Error calculating statistics: {err}")
+
+    def format_stats(stats):
+        return [
+            {"period": k, **v} for k, v in sorted(stats.items(), key=lambda x: x[0], reverse=True)
+        ]
+
+    context = {
+        "request": request,
+        "staff": staff,
+        "start_date": start_date,
+        "end_date": end_date,
+        "daily_stats": format_stats(daily_stats),
+        "weekly_stats": format_stats(weekly_stats),
+        "monthly_stats": format_stats(monthly_stats),
+    }
+
+    return templates.TemplateResponse(
+        "/staff/statistics.jinja", context=context, status_code=status.HTTP_200_OK
     )
