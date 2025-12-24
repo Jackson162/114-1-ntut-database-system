@@ -204,7 +204,7 @@ async def create_customer_order(
             total_price=item_total_price + bookstore.shipping_fee,
             shipping_fee=bookstore.shipping_fee,
             recipient_name=recipient_name,
-            status=OrderStatus.DELIVERING.value,
+            status=OrderStatus.RECEIVED.value,
         )
 
         if coupon:

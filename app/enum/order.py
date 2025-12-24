@@ -2,6 +2,7 @@ from enum import StrEnum
 
 
 class OrderStatus(StrEnum):
-    DELIVERING = "delivering"
-    DELIVERED = "delivered"
-    COMPLETED = "completed"
+    RECEIVED = "received"
+    PROCESSING = "processing"
+    SHIPPING = "shipping"
+    CLOSED = "closed"
