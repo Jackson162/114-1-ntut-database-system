@@ -1,39 +1,56 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookstore Admin Dashboard</title>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh; }
+        body { margin: 0;
+        font-family: Arial, sans-serif; background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh;
+        }
         
         /* Sticky Bar */
         .sticky-bar {
-            height: 60px; background-color: #343a40; color: white; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; position: fixed; top: 0; width: 100%; box-sizing: border-box; z-index: 1000;
+            height: 60px;
+            background-color: #343a40; color: white; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; position: fixed; top: 0; width: 100%;
+            box-sizing: border-box; z-index: 1000;
         }
-        .sticky-bar .left { display: flex; align-items: center; gap: 15px; }
-        .sticky-bar .title { font-size: 20px; font-weight: bold; }
-        .sticky-bar .home-icon { color: white; text-decoration: none; font-size: 24px; }
-        .sticky-bar .right { display: flex; align-items: center; gap: 20px; }
-        .logout-btn { background-color: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; }
+        .sticky-bar .left { display: flex; align-items: center;
+        gap: 15px; }
+        .sticky-bar .title { font-size: 20px; font-weight: bold;
+        }
+        .sticky-bar .home-icon { color: white; text-decoration: none; font-size: 24px;
+        }
+        .sticky-bar .right { display: flex; align-items: center; gap: 20px;
+        }
+        .logout-btn { background-color: #dc3545; color: white; border: none; padding: 5px 15px;
+        border-radius: 4px; cursor: pointer; }
         
         /* Layout Container */
-        .container { display: flex; margin-top: 60px; height: calc(100vh - 60px); }
+        .container { display: flex;
+        margin-top: 60px; height: calc(100vh - 60px); }
         
         /* Sidebar */
-        .sidebar { width: 250px; background-color: #ffffff; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column; }
-        .sidebar a {
-            padding: 15px 20px; text-decoration: none; color: #333; display: block; border-left: 4px solid transparent;
+        .sidebar { width: 250px;
+        background-color: #ffffff; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column;
         }
-        .sidebar a:hover { background-color: #f0f0f0; }
-        .sidebar a.active { background-color: #e9ecef; border-left-color: #007bff; color: #007bff; font-weight: bold; }
+        .sidebar a {
+            padding: 15px 20px;
+        text-decoration: none; color: #333; display: block; border-left: 4px solid transparent;
+        }
+        .sidebar a:hover { background-color: #f0f0f0;
+        }
+        .sidebar a.active { background-color: #e9ecef; border-left-color: #007bff; color: #007bff; font-weight: bold;
+        }
         
         /* Main Content */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .main-content { flex: 1;
+        padding: 30px; overflow-y: auto; }
         
         /* Utility */
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card { background: white;
+        padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -45,15 +62,15 @@
         </div>
         <div class="right">
             <span>{{ admin.name }} ({{ admin.account }})</span>
-            <button class="logout-btn" onclick="logout()">登出</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
 
     <div class="container">
         <div class="sidebar">
-            <a href="/frontend/admin/home" class="{% if active_page == 'dashboard' %}active{% endif %}">管理員資料</a>
-            <a href="/frontend/admin/users" class="{% if active_page == 'users' %}active{% endif %}">使用者帳號管理</a>
-            <a href="/frontend/admin/coupons" class="{% if active_page == 'coupons' %}active{% endif %}">平台優惠券管理</a>
+            <a href="/frontend/admin/home" class="{% if active_page == 'dashboard' %}active{% endif %}">Admin Profile</a>
+            <a href="/frontend/admin/users" class="{% if active_page == 'users' %}active{% endif %}">User Management</a>
+            <a href="/frontend/admin/coupons" class="{% if active_page == 'coupons' %}active{% endif %}">Coupon Management</a>
         </div>
 
         <div class="main-content">
@@ -66,7 +83,8 @@
             try {
                 const res = await fetch('/auth/logout', { method: 'POST' });
                 if (res.ok) {
-                    window.location.href = '/frontend/auth/login'; // 跳轉至登入頁
+                    window.location.href = '/frontend/auth/login';
+                    // Redirect to login page
                 } else {
                     alert('Logout failed');
                 }

@@ -48,77 +48,83 @@
     }
     
     /* Table Styles */
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+    table { width: 100%;
+    border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd;
+    }
     th { background-color: #f8f9fa; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card">
-    <h2 class="section-title">新增平台優惠券</h2>
+    <h2 class="section-title">Add Platform Coupon</h2>
     <form action="/admin/coupons" method="post">
         <div class="form-group">
-            <label for="name" class="form-label">優惠券名稱</label>
+            <label for="name" class="form-label">Coupon Name</label>
             <input type="text" class="form-control" id="name" name="name" required>
         </div>
         <div class="form-group">
-            <label for="type" class="form-label">優惠券類型</label>
+            <label for="type" class="form-label">Coupon Type</label>
+    
             <select class="form-select" id="type" name="type" required>
                 {% for type in coupon_types %}
                 <option value="{{ type }}">{{ type }}</option>
                 {% endfor %}
             </select>
         </div>
+        
         <div class="form-group">
-            <label for="discount_percentage" class="form-label">折扣比例 (0.0 - 1.0)</label>
-            <input type="number" step="0.01" min="0.0" max="1.0" class="form-control" id="discount_percentage" name="discount_percentage" placeholder="例如: 0.9 代表九折" required>
+            <label for="discount_percentage" class="form-label">Discount Rate (0.0 - 1.0)</label>
+            <input type="number" step="0.01" min="0.0" max="1.0" class="form-control" id="discount_percentage" name="discount_percentage" placeholder="e.g., 0.9 means 10% off" required>
         </div>
         <div class="form-group">
-            <label for="start_date" class="form-label">開始日期</label>
+            <label for="start_date" class="form-label">Start Date</label>
             <input type="date" class="form-control" id="start_date" name="start_date" required>
         </div>
+   
         <div class="form-group">
-            <label for="end_date" class="form-label">結束日期 (選填)</label>
+            <label for="end_date" class="form-label">End Date (Optional)</label>
             <input type="date" class="form-control" id="end_date" name="end_date">
         </div>
-        <button type="submit" class="btn btn-primary">建立優惠券</button>
+        <button type="submit" class="btn btn-primary">Create Coupon</button>
     </form>
 </div>
 
 <div class="card">
-    <h2 class="section-title">所有優惠券列表</h2>
+    <h2 class="section-title">All Coupons List</h2>
     {% if coupons %}
     <table>
         <thead>
             <tr>
-                <th>名稱</th>
-                <th>類型</th>
-                <th>折扣</th>
-                <th>開始日期</th>
-                <th>結束日期</th>
-                <th>建立者</th>
-                <th>操作</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Discount</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Creator</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for coupon in coupons %}
             <tr>
                 <td>{{ coupon.name }}</td>
+                
                 <td>{{ coupon.type }}</td>
                 <td>{{ (coupon.discount_percentage * 100) | round(2) }}%</td>
                 <td>{{ coupon.start_date }}</td>
                 <td>{{ coupon.end_date if coupon.end_date else '-' }}</td>
                 <td>{{ coupon.creator_name }}</td>
                 <td>
-                    <button class="btn btn-danger" onclick="deleteCoupon('{{ coupon.coupon_id }}')">刪除</button>
+                    <button class="btn btn-danger" onclick="deleteCoupon('{{ coupon.coupon_id }}')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p>目前沒有任何優惠券。</p>
+    <p>No coupons available at the moment.</p>
     {% endif %}
 </div>
 {% endblock %}
@@ -126,22 +132,20 @@
 {% block scripts %}
 <script>
     async function deleteCoupon(couponId) {
-        if (!confirm('確定要刪除此優惠券嗎？此操作無法復原。')) return;
-
+        if (!confirm('Are you sure you want to delete this coupon? This action cannot be undone.')) return;
         try {
             const res = await fetch(`/admin/coupons/${couponId}`, {
                 method: 'DELETE',
             });
-            
             if (res.ok) {
                 location.reload();
             } else {
                 const data = await res.json();
-                alert('刪除失敗: ' + (data.detail || '未知錯誤'));
+                alert('Delete failed: ' + (data.detail || 'Unknown error'));
             }
         } catch (e) {
             console.error(e);
-            alert('發生錯誤，請稍後再試');
+            alert('An error occurred, please try again later');
         }
     }
 </script>
