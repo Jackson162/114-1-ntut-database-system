@@ -70,6 +70,11 @@ If you change the model files in `app/database/models`,
 ./.venv/bin/python -m alembic revision --autogenerate -m "${revision_message}"
 ```
 
+# Print migration commands in sql
+```
+./.venv/bin/python -m alembic upgrade head --sql
+```
+
 5. check the generated file in `migrations/versions`
    
 ## do db migration
