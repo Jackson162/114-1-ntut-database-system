@@ -74,7 +74,7 @@ async def login(
                 next_page_path = "/frontend/staffs/bookstores"
             elif role == UserRole.ADMIN.value:
                 user = await get_admin_by_account(db=db, account=account)
-                next_page_path = "/frontend/auth/admin_login_succeeded"
+                next_page_path = "/frontend/admin/home"
             else:
                 raise Exception(f"Invalid role: {role}")
         except NoResultFound:

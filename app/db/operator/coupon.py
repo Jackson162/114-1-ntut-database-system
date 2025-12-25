@@ -92,7 +92,19 @@ async def get_coupon_by_accounts(db: AsyncSession, accounts: List[str], role: Us
     return result.scalars().all()
 
 
+async def get_all_coupons(db: AsyncSession):
+    """取得所有優惠券，包含 Admin 和 Staff 建立的"""
+    query = (
+        select(Coupon)
+        .options(joinedload(Coupon.admin), joinedload(Coupon.staff))
+        .order_by(Coupon.start_date.desc())
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
 async def delete_coupon(db: AsyncSession, coupon_id: UUID):
     query = delete(Coupon).where(Coupon.coupon_id == coupon_id).returning(Coupon)
     result = await db.execute(query)
     return result.scalars().one_or_none()
+

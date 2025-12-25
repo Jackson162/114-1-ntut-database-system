@@ -1,0 +1,152 @@
+{% extends "admin/base.jinja" %}
+
+{% block extra_head %}
+<style>
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    .section-title {
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .form-control, .form-select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .btn {
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: none;
+        font-size: 14px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    /* Table Styles */
+    table { width: 100%;
+    border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd;
+    }
+    th { background-color: #f8f9fa; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 class="section-title">Add Platform Coupon</h2>
+    <form action="/admin/coupons" method="post">
+        <div class="form-group">
+            <label for="name" class="form-label">Coupon Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="type" class="form-label">Coupon Type</label>
+    
+            <select class="form-select" id="type" name="type" required>
+                {% for type in coupon_types %}
+                <option value="{{ type }}">{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="discount_percentage" class="form-label">Discount Rate (0.0 - 1.0)</label>
+            <input type="number" step="0.01" min="0.0" max="1.0" class="form-control" id="discount_percentage" name="discount_percentage" placeholder="e.g., 0.9 means 10% off" required>
+        </div>
+        <div class="form-group">
+            <label for="start_date" class="form-label">Start Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+        </div>
+   
+        <div class="form-group">
+            <label for="end_date" class="form-label">End Date (Optional)</label>
+            <input type="date" class="form-control" id="end_date" name="end_date">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Coupon</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2 class="section-title">All Coupons List</h2>
+    {% if coupons %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Discount</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Creator</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coupon in coupons %}
+            <tr>
+                <td>{{ coupon.name }}</td>
+                
+                <td>{{ coupon.type }}</td>
+                <td>{{ (coupon.discount_percentage * 100) | round(2) }}%</td>
+                <td>{{ coupon.start_date }}</td>
+                <td>{{ coupon.end_date if coupon.end_date else '-' }}</td>
+                <td>{{ coupon.creator_name }}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteCoupon('{{ coupon.coupon_id }}')">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No coupons available at the moment.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function deleteCoupon(couponId) {
+        if (!confirm('Are you sure you want to delete this coupon? This action cannot be undone.')) return;
+        try {
+            const res = await fetch(`/admin/coupons/${couponId}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                location.reload();
+            } else {
+                const data = await res.json();
+                alert('Delete failed: ' + (data.detail || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert('An error occurred, please try again later');
+        }
+    }
+</script>
+{% endblock %}
