@@ -1,8 +1,8 @@
-"""init_add_all
+"""re-init_all
 
-Revision ID: 0a1e1db058ba
+Revision ID: 1f4570af9832
 Revises: 
-Create Date: 2025-11-26 12:39:35.547303
+Create Date: 2025-12-25 13:42:42.338743
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "0a1e1db058ba"
+revision = "1f4570af9832"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,6 +40,7 @@ def upgrade():
         sa.Column("publish_date", sa.Date(), nullable=True),
         sa.PrimaryKeyConstraint("book_id"),
         sa.UniqueConstraint("isbn"),
+        sa.UniqueConstraint("isbn", name="uc_isbn"),
     )
     op.create_table(
         "bookstore",
@@ -105,7 +106,7 @@ def upgrade():
         sa.Column("account", sa.Text(), nullable=False),
         sa.Column("name", sa.Text(), nullable=False),
         sa.Column("password", sa.Text(), nullable=False),
-        sa.Column("bookstore_id", sa.Uuid(), nullable=False),
+        sa.Column("bookstore_id", sa.Uuid(), nullable=True),
         sa.ForeignKeyConstraint(
             ["bookstore_id"],
             ["bookstore.bookstore_id"],
@@ -136,6 +137,7 @@ def upgrade():
         sa.Column(
             "coupon_id", sa.Uuid(), server_default=sa.text("gen_random_uuid()"), nullable=False
         ),
+        sa.Column("name", sa.Text(), nullable=True),
         sa.Column("type", sa.Text(), nullable=False),
         sa.Column("discount_percentage", sa.Numeric(), nullable=False),
         sa.Column("start_date", sa.Date(), nullable=False),
@@ -190,7 +192,7 @@ def upgrade():
             "order_item_id", sa.Uuid(), server_default=sa.text("gen_random_uuid()"), nullable=False
         ),
         sa.Column("quantity", sa.Integer(), nullable=False),
-        sa.Column("price", sa.Integer(), nullable=True),
+        sa.Column("price", sa.Integer(), nullable=False),
         sa.Column("order_id", sa.Uuid(), nullable=False),
         sa.Column("book_bookstore_mapping_id", sa.Uuid(), nullable=False),
         sa.CheckConstraint("price >= 0", name="price_non_negative"),

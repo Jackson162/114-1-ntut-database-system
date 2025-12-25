@@ -84,7 +84,7 @@ downgrad 1 version
 
 downgrad all versions
 ```
-alembic downgrade base
+./.venv/bin/python -m alembic downgrade base
 ```
 
 # Git Flow for development
